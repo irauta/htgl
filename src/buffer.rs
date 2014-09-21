@@ -31,7 +31,6 @@ impl Drop for BufferLifetime {
             gl::DeleteBuffers(1, &self.id);
             check_error();
         }
-        println!("Buffer::drop");
     }
 }
 
