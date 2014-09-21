@@ -4,6 +4,7 @@ extern crate gl;
 use std::rc::Rc;
 
 pub use context::Context;
+pub use gl::load_with;
 
 mod context;
 mod buffer;
@@ -30,7 +31,6 @@ impl<T> Handle<T> {
         &*self.resource
     }
 }
-
 
 pub type VertexBufferHandle = Handle<buffer::BufferObject<buffer::VertexBuffer>>;
 pub type IndexBufferHandle = Handle<buffer::BufferObject<buffer::IndexBuffer>>;
