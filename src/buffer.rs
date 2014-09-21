@@ -52,6 +52,14 @@ impl<T> BufferObject<T> {
             check_error();
         }
     }
+
+    pub fn sub_data<D>(&self, data: &[D], offset: uint) {
+        let data_size = (size_of::<D>() * data.len()) as GLsizeiptr;
+        unsafe {
+            gl::BufferSubData(self.target, data_size, offset as GLsizeiptr, data.as_ptr() as *const GLvoid);
+            check_error();
+        }
+    }
 }
 
 impl<T> PartialEq for BufferObject<T> {

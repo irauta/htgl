@@ -25,4 +25,10 @@ impl Context {
         self.vbo_tracker.bind(vbo);
         vbo.data(data);
     }
+
+    pub fn vertex_sub_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T], offset: uint) {
+        let vbo = vbo.access();
+        self.vbo_tracker.bind(vbo);
+        vbo.sub_data(data, offset);
+    }
 }
