@@ -15,4 +15,3 @@ name = "mog"
 
 [[bin]]
 name = "app"
-src = "src/bin/app.rs"
