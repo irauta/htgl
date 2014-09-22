@@ -10,6 +10,7 @@ mod context;
 mod buffer;
 mod util;
 mod tracker;
+mod vertexarray;
 
 
 trait Bind {
@@ -40,3 +41,4 @@ impl<T> Clone for Handle<T> {
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
+pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
