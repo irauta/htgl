@@ -32,5 +32,11 @@ impl<T> Handle<T> {
     }
 }
 
+impl<T> Clone for Handle<T> {
+    fn clone(&self) -> Handle<T> {
+        Handle { resource: self.resource.clone() }
+    }
+}
+
 pub type VertexBufferHandle = Handle<buffer::BufferObject<buffer::VertexBuffer>>;
 pub type IndexBufferHandle = Handle<buffer::BufferObject<buffer::IndexBuffer>>;
