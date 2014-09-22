@@ -7,8 +7,11 @@ use std::mem::size_of;
 use super::Bind;
 use super::util::check_error;
 
-pub struct VertexBuffer;
-pub struct IndexBuffer;
+pub struct VertexBufferTag;
+pub struct IndexBufferTag;
+
+pub type VertexBuffer = BufferObject<VertexBufferTag>;
+pub type IndexBuffer = BufferObject<IndexBufferTag>;
 
 struct BufferLifetime {
     pub id: u32
@@ -77,10 +80,10 @@ impl<T> Bind for BufferObject<T> {
     }
 }
 
-pub fn new_vertex_buffer() -> BufferObject<VertexBuffer> {
+pub fn new_vertex_buffer() -> VertexBuffer {
     BufferObject::new(gl::ARRAY_BUFFER)
 }
 
-pub fn new_index_buffer() -> BufferObject<IndexBuffer> {
+pub fn new_index_buffer() -> IndexBuffer {
     BufferObject::new(gl::ELEMENT_ARRAY_BUFFER)
 }

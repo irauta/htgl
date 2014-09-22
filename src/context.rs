@@ -1,10 +1,10 @@
 
 use super::tracker::SimpleBindingTracker;
-use super::buffer::{mod,BufferObject,VertexBuffer};
+use super::buffer::{mod,VertexBuffer};
 use super::{Handle,VertexBufferHandle,IndexBufferHandle};
 
 pub struct Context {
-    vbo_tracker: SimpleBindingTracker<BufferObject<VertexBuffer>>
+    vbo_tracker: SimpleBindingTracker<VertexBuffer>
 }
 
 impl Context {

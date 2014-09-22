@@ -38,5 +38,5 @@ impl<T> Clone for Handle<T> {
     }
 }
 
-pub type VertexBufferHandle = Handle<buffer::BufferObject<buffer::VertexBuffer>>;
-pub type IndexBufferHandle = Handle<buffer::BufferObject<buffer::IndexBuffer>>;
+pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
+pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
