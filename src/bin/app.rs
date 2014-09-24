@@ -19,7 +19,8 @@ fn main() {
 
     let mut ctx = mog::Context::new();
     let vbo = ctx.new_vertex_buffer();
-    ctx.vertex_data(&vbo, [0u32]);
+    let vertices = [-0.5f32,-0.5f32,0f32, 0.5f32,-0.5f32,0f32, 0f32,0.5f32,0f32];
+    ctx.vertex_data(&vbo, &vertices);
 
 
     while !window.should_close() {
