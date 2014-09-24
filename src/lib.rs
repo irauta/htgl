@@ -5,15 +5,16 @@ pub use gl::load_with;
 pub use vertexarray::{VertexAttribute,AttributeType};
 
 
-mod buffer;
-mod util;
-mod tracker;
-mod vertexarray;
-
 use std::rc::Rc;
 use tracker::{SimpleBindingTracker,VertexArrayTracker};
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
+
+
+mod buffer;
+mod util;
+mod tracker;
+mod vertexarray;
 
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
