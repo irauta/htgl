@@ -73,6 +73,13 @@ impl Context {
         Handle::new(vertexarray::VertexArray::new(self, attributes, index_buffer))
     }
 
+    pub fn new_vertex_array_simple(&mut self,
+                                   attributes: &[(u8, AttributeType, bool)],
+                                   vertex_buffer: VertexBufferHandle,
+                                   index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
+        Handle::new(vertexarray::VertexArray::new_single_vbo(self, attributes, vertex_buffer, index_buffer))
+    }
+
     pub fn vertex_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T]) {
         let vbo = vbo.access();
         self.vbo_tracker.bind(vbo);
