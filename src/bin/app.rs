@@ -5,6 +5,35 @@ extern crate mog;
 
 use glfw::Context;
 
+use mog::{AttributeFloat,AttributeUnsignedByte};
+
+#[allow(dead_code)]
+struct Vec3 {
+    x: f32,
+    y: f32,
+    z: f32,
+}
+
+#[allow(dead_code)]
+struct Rgba {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+}
+
+#[allow(dead_code)]
+struct Vertex {
+    position: Vec3,
+    color: Rgba
+}
+
+impl Vertex {
+    fn new(x: f32, y: f32, z: f32, r: u8, g: u8, b: u8, a: u8) -> Vertex {
+        Vertex { position: Vec3 { x: x, y: y, z: z }, color: Rgba { r: r, g: g, b: b, a: a } }
+    }
+}
+
 fn main() {
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
@@ -19,15 +48,21 @@ fn main() {
 
     let mut ctx = mog::Context::new();
     let vbo = ctx.new_vertex_buffer();
-    let vertices = [-0.5f32,-0.5f32,0f32, 0.5f32,-0.5f32,0f32, 0f32,0.5f32,0f32];
+    let vertices = [
+        Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
+        Vertex::new(0.5f32, -0.5f32, 0f32, 0, 255, 0, 0),
+        Vertex::new(0f32, 0.5f32, 0f32, 0, 0, 255, 0)
+        ];
     ctx.vertex_data(&vbo, &vertices);
-
+    let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
 
     while !window.should_close() {
         glfw.poll_events();
         for (_, event) in glfw::flush_messages(&events) {
             handle_window_event(&window, event);
         }
+
+        ctx.draw_arrays(0, 3);
     }
 }
 
