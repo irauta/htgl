@@ -2,7 +2,7 @@
 extern crate gl;
 
 pub use gl::load_with;
-pub use vertexarray::{VertexAttribute,AttributeType};
+pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsignedByte,AttributeShort,AttributeUnsignedShort,AttributeInt,AttributeUnsignedInt,AttributeHalfFloat,AttributeFloat,AttributeDouble,AttributeInt2101010Rev,AttributeUnsignedInt2101010Rev};
 
 
 use std::rc::Rc;
@@ -10,11 +10,11 @@ use tracker::{SimpleBindingTracker,VertexArrayTracker};
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
 
-
 mod buffer;
 mod util;
 mod tracker;
 mod vertexarray;
+mod draw;
 
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
@@ -90,6 +90,10 @@ impl Context {
         let vbo = vbo.access();
         self.vbo_tracker.bind(vbo);
         vbo.sub_data(data, offset);
+    }
+
+    pub fn draw_arrays(&mut self, first: u32, count: u32) {
+        draw::draw_arrays(first, count);
     }
 
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBufferHandle) {

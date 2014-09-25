@@ -9,7 +9,7 @@ use super::util::check_error;
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 
-#[deriving(Clone)]
+#[deriving(Clone,Show)]
 pub enum AttributeType {
     AttributeByte,
     AttributeUnsignedByte,
@@ -104,7 +104,7 @@ impl VertexArray {
                 vertex_buffer: vertex_buffer.clone()
             });
             counter += 1;
-            offset += attribute_to_size(attribute_type);
+            offset += attribute_to_size(attribute_type) * size as u32;
         }
         VertexArray::new(ctx, full_attributes.as_slice(), index_buffer)
     }
@@ -112,6 +112,9 @@ impl VertexArray {
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {
         ctx.bind_vbo_for_editing(&attribute.vertex_buffer);
         let attribute_type = attribute_to_gl_type(attribute.attribute_type);
+
+        gl::EnableVertexAttribArray(attribute.index);
+        check_error();
         unsafe {
             gl::VertexAttribPointer(
                 attribute.index as GLuint,
@@ -129,6 +132,7 @@ impl VertexArray {
 impl Bind for VertexArray {
     fn bind(&self) {
         gl::BindVertexArray(self.lifetime.id);
+        check_error();
     }
 
     fn get_id(&self) -> u32 {
