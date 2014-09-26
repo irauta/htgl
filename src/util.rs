@@ -15,5 +15,6 @@ pub fn check_error() {
             _ => "Unrecognized error code"
         };
         println!("Error happened! Error: {} ({})", message, err_code);
+        fail!();
     }
 }

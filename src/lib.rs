@@ -3,23 +3,29 @@ extern crate gl;
 
 pub use gl::load_with;
 pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsignedByte,AttributeShort,AttributeUnsignedShort,AttributeInt,AttributeUnsignedInt,AttributeHalfFloat,AttributeFloat,AttributeDouble,AttributeInt2101010Rev,AttributeUnsignedInt2101010Rev};
-
+pub use shader::{ShaderType,VertexShader,FragmentShader};
+pub use options::{RenderOption,ClearColor,DepthTest};
 
 use std::rc::Rc;
 use tracker::{SimpleBindingTracker,VertexArrayTracker};
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
+use util::check_error;
 
 mod buffer;
 mod util;
 mod tracker;
 mod vertexarray;
+mod shader;
+mod options;
 mod draw;
 
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
 pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
+pub type ShaderHandle = Handle<shader::Shader>;
+pub type ProgramHandle = Handle<shader::Program>;
 
 
 trait Bind {
@@ -80,6 +86,14 @@ impl Context {
         Handle::new(vertexarray::VertexArray::new_single_vbo(self, attributes, vertex_buffer, index_buffer))
     }
 
+    pub fn new_shader(&mut self, shader_type: ShaderType, source: &str) -> ShaderHandle {
+        Handle::new(shader::Shader::new(shader_type, source))
+    }
+
+    pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
+        Handle::new(shader::Program::new(shaders))
+    }
+
     pub fn vertex_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T]) {
         let vbo = vbo.access();
         self.vbo_tracker.bind(vbo);
@@ -92,8 +106,21 @@ impl Context {
         vbo.sub_data(data, offset);
     }
 
+    pub fn use_program(&mut self, program: &ProgramHandle) {
+        program.access().use_program();
+    }
+
     pub fn draw_arrays(&mut self, first: u32, count: u32) {
         draw::draw_arrays(first, count);
+    }
+
+    pub fn clear(&mut self) {
+        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        check_error();
+    }
+
+    pub fn set_option(&mut self, option: RenderOption) {
+        options::set_option(option);
     }
 
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBufferHandle) {

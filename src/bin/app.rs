@@ -5,7 +5,7 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,AttributeUnsignedByte};
+use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,VertexShader,FragmentShader};
 
 #[allow(dead_code)]
 struct Vec3 {
@@ -47,6 +47,8 @@ fn main() {
     mog::load_with(|s| window.get_proc_address(s));
 
     let mut ctx = mog::Context::new();
+    ctx.set_option(ClearColor(1f32, 1f32, 1f32, 1f32));
+    ctx.set_option(DepthTest(false));
     let vbo = ctx.new_vertex_buffer();
     let vertices = [
         Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
@@ -56,13 +58,21 @@ fn main() {
     ctx.vertex_data(&vbo, &vertices);
     let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
 
+    let vs = ctx.new_shader(VertexShader, "");
+    let fs = ctx.new_shader(FragmentShader, "");
+    let program = ctx.new_program(&[vs, fs]);
+    ctx.use_program(&program);
+
     while !window.should_close() {
         glfw.poll_events();
         for (_, event) in glfw::flush_messages(&events) {
             handle_window_event(&window, event);
         }
 
+        ctx.clear();
         ctx.draw_arrays(0, 3);
+
+        window.swap_buffers();
     }
 }
 
