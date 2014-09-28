@@ -1,6 +1,8 @@
 
+use std::str::{Slice,Owned};
+
 use gl;
-use gl::types::{GLenum,GLint};
+use gl::types::{GLenum,GLint,GLsizei};
 
 use super::ShaderHandle;
 use super::util::check_error;
@@ -23,8 +25,24 @@ impl Shader {
         shader
     }
 
-    pub fn get_info_log() -> String {
-        fail!();
+    pub fn get_info_log(&self) -> String {
+        let info_length = self.get_info_length();
+        let mut actual_info_length = 0;
+        let mut info_vec = Vec::with_capacity(info_length as uint);
+        info_vec.grow(info_length as uint, 0u8);
+        unsafe {
+            let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
+            gl::GetShaderInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);
+            check_error();
+        }
+        info_vec.pop(); // Remove the null byte from end
+        match String::from_utf8(info_vec) {
+            Ok(info) => info,
+            Err(info_vec) => match String::from_utf8_lossy(info_vec[]) {
+                Owned(info) => info,
+                Slice(info_str) => String::from_str(info_str) // This one shouldn't probably happen
+            }
+        }
     }
 
     fn compile(&self, source: &str) {
@@ -45,13 +63,23 @@ impl Shader {
         let mut compile_status = 0;
         unsafe {
             gl::GetShaderiv(self.id, gl::COMPILE_STATUS, &mut compile_status);
+            check_error();
         }
-        println!("Compile status: {}", compile_status);
         let compile_status = compile_status != (gl::FALSE as i32);
         if !compile_status {
+            println!("Shader info log:\n{}", self.get_info_log());
             fail!("Compiling failed");
         }
         compile_status
+    }
+
+    fn get_info_length(&self) -> GLsizei {
+        let mut info_length = 0;
+        unsafe {
+            gl::GetShaderiv(self.id, gl::INFO_LOG_LENGTH, &mut info_length);
+            check_error();
+        }
+        info_length
     }
 }
 

@@ -8,6 +8,7 @@ use glfw::Context;
 use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,VertexShader,FragmentShader};
 
 #[allow(dead_code)]
+#[repr(packed)]
 struct Vec3 {
     x: f32,
     y: f32,
@@ -15,6 +16,7 @@ struct Vec3 {
 }
 
 #[allow(dead_code)]
+#[repr(packed)]
 struct Rgba {
     r: u8,
     g: u8,
@@ -23,6 +25,7 @@ struct Rgba {
 }
 
 #[allow(dead_code)]
+#[repr(packed)]
 struct Vertex {
     position: Vec3,
     color: Rgba
@@ -34,8 +37,37 @@ impl Vertex {
     }
 }
 
+static vs_source: &'static str = "
+#version 330 core
+
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 color;
+
+out vec4 v_color;
+
+void main() {
+    gl_Position.xyz = position;
+    gl_Position.w = 1.0;
+    v_color = color;
+}
+";
+
+static fs_source: &'static str = "
+#version 330 core
+
+in vec4 v_color;
+out vec3 color;
+
+void main() {
+    color = v_color.rgb;
+}
+";
+
 fn main() {
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+
+    glfw.window_hint(glfw::ContextVersion(3, 3));
+    glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
 
     // Create a windowed mode window and its OpenGL context
     let (window, events) = glfw.create_window(300, 300, "Hello this is window", glfw::Windowed)
@@ -58,8 +90,8 @@ fn main() {
     ctx.vertex_data(&vbo, &vertices);
     let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
 
-    let vs = ctx.new_shader(VertexShader, "");
-    let fs = ctx.new_shader(FragmentShader, "");
+    let vs = ctx.new_shader(VertexShader, vs_source);
+    let fs = ctx.new_shader(FragmentShader, fs_source);
     let program = ctx.new_program(&[vs, fs]);
     ctx.use_program(&program);
 

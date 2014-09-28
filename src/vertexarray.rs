@@ -106,6 +106,10 @@ impl VertexArray {
             counter += 1;
             offset += attribute_to_size(attribute_type) * size as u32;
         }
+        let stride = offset;
+        for ref mut attr in full_attributes.iter_mut() {
+            attr.stride = stride;
+        }
         VertexArray::new(ctx, full_attributes.as_slice(), index_buffer)
     }
 
