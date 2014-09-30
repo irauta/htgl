@@ -89,6 +89,7 @@ fn main() {
         ];
     ctx.vertex_data(&vbo, &vertices);
     let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
+    ctx.use_vertex_array(&vao);
 
     let vs = ctx.new_shader(VertexShader, vs_source);
     let fs = ctx.new_shader(FragmentShader, fs_source);

@@ -4,6 +4,7 @@ use std::str::{Slice,Owned};
 use gl;
 use gl::types::{GLenum,GLint,GLsizei};
 
+use super::SharedContextStateHandle;
 use super::ShaderHandle;
 use super::util::check_error;
 
@@ -13,19 +14,20 @@ pub enum ShaderType {
 }
 
 pub struct Shader {
-    id: u32
+    id: u32,
+    context_shared: SharedContextStateHandle,
 }
 
 impl Shader {
-    pub fn new(shader_type: ShaderType, source: &str) -> Shader {
+    pub fn new(shader_type: ShaderType, source: &str, context_shared: SharedContextStateHandle) -> Shader {
         let id = gl::CreateShader(shader_type_to_enum(shader_type));
         check_error();
-        let shader = Shader { id: id };
+        let shader = Shader { id: id, context_shared: context_shared };
         shader.compile(source);
         shader
     }
 
-    pub fn get_info_log(&self) -> String {
+    fn get_info_log(&self) -> String {
         let info_length = self.get_info_length();
         let mut actual_info_length = 0;
         let mut info_vec = Vec::with_capacity(info_length as uint);
@@ -83,58 +85,102 @@ impl Shader {
     }
 }
 
+#[unsafe_destructor]
 impl Drop for Shader {
     fn drop(&mut self) {
+        if !self.context_shared.borrow().is_alive {
+            return;
+        }
         gl::DeleteShader(self.id);
         check_error();
     }
 }
 
-pub struct ProgramLifetime {
-    id: u32
-}
-
-impl ProgramLifetime {
-    fn new() -> ProgramLifetime {
-        let id = gl::CreateProgram();
-        check_error();
-        ProgramLifetime { id: id }
-    }
-}
-
-impl Drop for ProgramLifetime {
-    fn drop(&mut self) {
-        gl::DeleteProgram(self.id);
-        check_error();
-    }
-}
-
 pub struct Program {
-    lifetime: ProgramLifetime,
+    id: u32,
+    context_shared: SharedContextStateHandle,
     shaders: Vec<ShaderHandle>
 }
 
 impl Program {
-    pub fn new(shaders: &[ShaderHandle]) -> Program {
+    pub fn new(shaders: &[ShaderHandle], context_shared: SharedContextStateHandle) -> Program {
+        let id = gl::CreateProgram();
+        check_error();
         let program = Program {
-            lifetime: ProgramLifetime::new(),
+            id: id,
+            context_shared: context_shared,
             shaders: shaders.to_vec()
         };
-        for ref shader in program.shaders.iter() {
-            gl::AttachShader(program.lifetime.id, shader.access().id);
-            check_error();
-        }
-        gl::LinkProgram(program.lifetime.id);
-        check_error();
+        program.link();
         program
     }
 
     pub fn use_program(&self) {
-        gl::UseProgram(self.lifetime.id);
+        gl::UseProgram(self.id);
     }
 
-    pub fn get_info_log() -> String {
-        fail!();
+    fn link(&self) {
+        for ref shader in self.shaders.iter() {
+            gl::AttachShader(self.id, shader.access().id);
+            check_error();
+        }
+        gl::LinkProgram(self.id);
+        check_error();
+        self.get_link_status();
+    }
+
+    fn get_info_log(&self) -> String {
+        let info_length = self.get_info_length();
+        let mut actual_info_length = 0;
+        let mut info_vec = Vec::with_capacity(info_length as uint);
+        info_vec.grow(info_length as uint, 0u8);
+        unsafe {
+            let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
+            gl::GetProgramInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);
+            check_error();
+        }
+        info_vec.pop(); // Remove the null byte from end
+        match String::from_utf8(info_vec) {
+            Ok(info) => info,
+            Err(info_vec) => match String::from_utf8_lossy(info_vec[]) {
+                Owned(info) => info,
+                Slice(info_str) => String::from_str(info_str) // This one shouldn't probably happen
+            }
+        }
+    }
+
+    fn get_link_status(&self) -> bool {
+        let mut link_status = 0;
+        unsafe {
+            gl::GetProgramiv(self.id, gl::LINK_STATUS, &mut link_status);
+            check_error();
+        }
+        let link_status = link_status != (gl::FALSE as i32);
+        if !link_status {
+            println!("Program info log:\n{}", self.get_info_log());
+            fail!("Compiling failed");
+        }
+        link_status
+    }
+
+    fn get_info_length(&self) -> GLsizei {
+        let mut info_length = 0;
+        unsafe {
+            gl::GetProgramiv(self.id, gl::INFO_LOG_LENGTH, &mut info_length);
+            check_error();
+        }
+        info_length
+    }
+}
+
+#[unsafe_destructor]
+impl Drop for Program {
+    fn drop(&mut self) {
+        if !self.context_shared.borrow().is_alive {
+            return;
+        }
+        gl::DeleteProgram(self.id);
+        check_error();
     }
 }
 

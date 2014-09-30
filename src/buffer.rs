@@ -6,6 +6,7 @@ use std::mem::size_of;
 
 use super::Bind;
 use super::util::check_error;
+use super::SharedContextStateHandle;
 
 pub struct VertexBufferTag;
 pub struct IndexBufferTag;
@@ -13,38 +14,21 @@ pub struct IndexBufferTag;
 pub type VertexBuffer = BufferObject<VertexBufferTag>;
 pub type IndexBuffer = BufferObject<IndexBufferTag>;
 
-struct BufferLifetime {
-    pub id: u32
+
+pub struct BufferObject<T> {
+    pub id: u32,
+    context_shared: SharedContextStateHandle,
+    target: GLenum
 }
 
-impl BufferLifetime {
-    fn new() -> BufferLifetime {
+impl<T> BufferObject<T> {
+    fn new(target: GLenum, context_shared: SharedContextStateHandle) -> BufferObject<T> {
         let mut id: u32 = 0;
         unsafe {
             gl::GenBuffers(1, &mut id);
             check_error();
         }
-        BufferLifetime { id: id }
-    }
-}
-
-impl Drop for BufferLifetime {
-    fn drop(&mut self) {
-        unsafe {
-            gl::DeleteBuffers(1, &self.id);
-            check_error();
-        }
-    }
-}
-
-pub struct BufferObject<T> {
-    lifetime: BufferLifetime,
-    target: GLenum
-}
-
-impl<T> BufferObject<T> {
-    fn new(target: GLenum) -> BufferObject<T> {
-        BufferObject { lifetime: BufferLifetime::new(), target: target }
+        BufferObject { id: id, context_shared: context_shared, target: target }
     }
 
     pub fn data<D>(&self, data: &[D]) {
@@ -64,26 +48,41 @@ impl<T> BufferObject<T> {
     }
 }
 
+#[unsafe_destructor]
+impl<T> Drop for BufferObject<T> {
+    fn drop(&mut self) {
+        let mut context_shared = self.context_shared.borrow_mut();
+        if !context_shared.is_alive {
+            return;
+        }
+        context_shared.unregister_buffer(self.id, self.target);
+        unsafe {
+            gl::DeleteBuffers(1, &self.id);
+            check_error();
+        }
+    }
+}
+
 impl<T> PartialEq for BufferObject<T> {
     fn eq(&self, other: &BufferObject<T>) -> bool {
-        self.lifetime.id == other.lifetime.id
+        self.id == other.id
     }
 }
 
 impl<T> Bind for BufferObject<T> {
     fn bind(&self) {
-        gl::BindBuffer(self.target, self.lifetime.id);
+        gl::BindBuffer(self.target, self.id);
     }
 
     fn get_id(&self) -> u32 {
-        self.lifetime.id
+        self.id
     }
 }
 
-pub fn new_vertex_buffer() -> VertexBuffer {
-    BufferObject::new(gl::ARRAY_BUFFER)
+pub fn new_vertex_buffer(context_shared: SharedContextStateHandle) -> VertexBuffer {
+    BufferObject::new(gl::ARRAY_BUFFER, context_shared)
 }
 
-pub fn new_index_buffer() -> IndexBuffer {
-    BufferObject::new(gl::ELEMENT_ARRAY_BUFFER)
+pub fn new_index_buffer(context_shared: SharedContextStateHandle) -> IndexBuffer {
+    BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, context_shared)
 }
