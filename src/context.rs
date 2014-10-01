@@ -1,4 +1,7 @@
 
+use core::cell::RefCell;
+use std::rc::Rc;
+
 use gl;
 use gl::types::GLenum;
 
@@ -30,5 +33,27 @@ impl SharedContextState {
             gl::ELEMENT_ARRAY_BUFFER => {}, // VAO tracker handles index buffers implicitly
             _ => fail!("unregister_buffer not implemented for target {}", target)
         }
+    }
+}
+
+pub struct RegistrationHandle {
+    context_shared: Rc<RefCell<SharedContextState>>
+}
+
+impl RegistrationHandle {
+    pub fn new(context_shared: Rc<RefCell<SharedContextState>>) -> RegistrationHandle {
+        RegistrationHandle { context_shared: context_shared }
+    }
+
+    pub fn context_alive(&self) -> bool {
+        self.context_shared.borrow().is_alive
+    }
+
+    pub fn unregister_vertex_array(&self, id: u32) {
+        self.context_shared.borrow_mut().unregister_vertex_array(id);
+    }
+
+    pub fn unregister_buffer(&self, id: u32, target: GLenum) {
+        self.context_shared.borrow_mut().unregister_buffer(id, target);
     }
 }

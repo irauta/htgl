@@ -5,7 +5,7 @@ use gl::types::{GLenum,GLint,GLuint,GLboolean,GLsizei,GLvoid};
 use super::Context;
 use super::Bind;
 
-use super::SharedContextStateHandle;
+use super::context::RegistrationHandle;
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 
@@ -37,7 +37,7 @@ pub struct VertexAttribute {
 
 pub struct VertexArray {
     pub id: u32,
-    context_shared: SharedContextStateHandle,
+    registration: RegistrationHandle,
     vertex_attributes: Vec<VertexAttribute>,
     index_buffer: Option<IndexBufferHandle>
 }
@@ -46,7 +46,7 @@ impl VertexArray {
     pub fn new(ctx: &mut Context,
                attributes: &[VertexAttribute],
                index_buffer: Option<IndexBufferHandle>,
-               context_shared: SharedContextStateHandle) -> VertexArray {
+               registration: RegistrationHandle) -> VertexArray {
         let mut id: u32 = 0;
         unsafe {
             gl::GenVertexArrays(1, &mut id);
@@ -54,7 +54,7 @@ impl VertexArray {
         }
         let vertex_array = VertexArray {
             id: id,
-            context_shared: context_shared,
+            registration: registration,
             vertex_attributes: attributes.to_vec(),
             index_buffer: index_buffer
         };
@@ -73,7 +73,7 @@ impl VertexArray {
                           attributes: &[(u8, AttributeType, bool)],
                           vertex_buffer: VertexBufferHandle,
                           index_buffer: Option<IndexBufferHandle>,
-                          context_shared: SharedContextStateHandle) -> VertexArray {
+                          registration: RegistrationHandle) -> VertexArray {
         let mut full_attributes = Vec::with_capacity(attributes.len());
         let mut counter = 0;
         let mut offset = 0;
@@ -95,7 +95,7 @@ impl VertexArray {
         for ref mut attr in full_attributes.iter_mut() {
             attr.stride = stride;
         }
-        VertexArray::new(ctx, full_attributes.as_slice(), index_buffer, context_shared)
+        VertexArray::new(ctx, full_attributes.as_slice(), index_buffer, registration)
     }
 
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {
@@ -126,14 +126,12 @@ impl VertexArray {
 #[unsafe_destructor]
 impl Drop for VertexArray {
     fn drop(&mut self) {
-        let mut context_shared = self.context_shared.borrow_mut();
-        if !context_shared.is_alive {
-            return;
-        }
-        context_shared.unregister_vertex_array(self.id);
-        unsafe {
-            gl::DeleteVertexArrays(1, &self.id);
-            check_error!();
+        if self.registration.context_alive() {
+            self.registration.unregister_vertex_array(self.id);
+            unsafe {
+                gl::DeleteVertexArrays(1, &self.id);
+                check_error!();
+            }
         }
     }
 }

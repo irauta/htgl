@@ -5,7 +5,7 @@ use gl::types::{GLenum,GLsizeiptr,GLvoid};
 use std::mem::size_of;
 
 use super::Bind;
-use super::SharedContextStateHandle;
+use super::context::RegistrationHandle;
 
 pub struct VertexBufferTag;
 pub struct IndexBufferTag;
@@ -16,18 +16,18 @@ pub type IndexBuffer = BufferObject<IndexBufferTag>;
 
 pub struct BufferObject<T> {
     pub id: u32,
-    context_shared: SharedContextStateHandle,
+    registration: RegistrationHandle,
     target: GLenum
 }
 
 impl<T> BufferObject<T> {
-    fn new(target: GLenum, context_shared: SharedContextStateHandle) -> BufferObject<T> {
+    fn new(target: GLenum, registration: RegistrationHandle) -> BufferObject<T> {
         let mut id: u32 = 0;
         unsafe {
             gl::GenBuffers(1, &mut id);
             check_error!();
         }
-        BufferObject { id: id, context_shared: context_shared, target: target }
+        BufferObject { id: id, registration: registration, target: target }
     }
 
     pub fn data<D>(&self, data: &[D]) {
@@ -50,14 +50,12 @@ impl<T> BufferObject<T> {
 #[unsafe_destructor]
 impl<T> Drop for BufferObject<T> {
     fn drop(&mut self) {
-        let mut context_shared = self.context_shared.borrow_mut();
-        if !context_shared.is_alive {
-            return;
-        }
-        context_shared.unregister_buffer(self.id, self.target);
-        unsafe {
-            gl::DeleteBuffers(1, &self.id);
-            check_error!();
+        if self.registration.context_alive() {
+            self.registration.unregister_buffer(self.id, self.target);
+            unsafe {
+                gl::DeleteBuffers(1, &self.id);
+                check_error!();
+            }
         }
     }
 }
@@ -78,10 +76,10 @@ impl<T> Bind for BufferObject<T> {
     }
 }
 
-pub fn new_vertex_buffer(context_shared: SharedContextStateHandle) -> VertexBuffer {
-    BufferObject::new(gl::ARRAY_BUFFER, context_shared)
+pub fn new_vertex_buffer(registration: RegistrationHandle) -> VertexBuffer {
+    BufferObject::new(gl::ARRAY_BUFFER, registration)
 }
 
-pub fn new_index_buffer(context_shared: SharedContextStateHandle) -> IndexBuffer {
-    BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, context_shared)
+pub fn new_index_buffer(registration: RegistrationHandle) -> IndexBuffer {
+    BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, registration)
 }

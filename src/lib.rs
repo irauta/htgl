@@ -13,7 +13,7 @@ use core::cell::RefCell;
 use std::rc::Rc;
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
-use context::SharedContextState;
+use context::{SharedContextState,RegistrationHandle};
 
 macro_rules! check_error(
     () => (::util::check_error(file!(), line!()));
@@ -27,8 +27,6 @@ mod shader;
 mod options;
 mod draw;
 mod context;
-
-type SharedContextStateHandle = Rc<RefCell<SharedContextState>>;
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
@@ -65,7 +63,7 @@ impl<T> Clone for Handle<T> {
 
 
 pub struct Context {
-    shared_state: SharedContextStateHandle
+    shared_state: Rc<RefCell<SharedContextState>>
 }
 
 impl Context {
@@ -73,40 +71,45 @@ impl Context {
         Context { shared_state: Rc::new(RefCell::new(SharedContextState::new())) }
     }
 
-    pub fn new_vertex_buffer(&self) -> VertexBufferHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(buffer::new_vertex_buffer(ctx_handle))
+    // Construct new objects
+
+    pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
+        let registration = self.registration_handle();
+        Handle::new(buffer::new_vertex_buffer(registration))
     }
 
-    pub fn new_index_buffer(&self) -> IndexBufferHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(buffer::new_index_buffer(ctx_handle))
+    pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
+        let registration = self.registration_handle();
+        Handle::new(buffer::new_index_buffer(registration))
     }
 
     pub fn new_vertex_array(&mut self,
                             attributes: &[VertexAttribute],
                             index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(vertexarray::VertexArray::new(self, attributes, index_buffer, ctx_handle))
+        let registration = self.registration_handle();
+        Handle::new(vertexarray::VertexArray::new(self, attributes, index_buffer, registration))
     }
 
     pub fn new_vertex_array_simple(&mut self,
                                    attributes: &[(u8, AttributeType, bool)],
                                    vertex_buffer: VertexBufferHandle,
                                    index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(vertexarray::VertexArray::new_single_vbo(self, attributes, vertex_buffer, index_buffer, ctx_handle))
+        let registration = self.registration_handle();
+        Handle::new(vertexarray::VertexArray::new_single_vbo(self, attributes, vertex_buffer, index_buffer, registration))
     }
 
-    pub fn new_shader(&mut self, shader_type: ShaderType, source: &str) -> ShaderHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(shader::Shader::new(shader_type, source, ctx_handle))
+    pub fn new_shader(&self, shader_type: ShaderType, source: &str) -> ShaderHandle {
+        let registration = self.registration_handle();
+        Handle::new(shader::Shader::new(shader_type, source, registration))
     }
 
-    pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
-        let ctx_handle = self.shared_state.clone();
-        Handle::new(shader::Program::new(shaders, ctx_handle))
+    pub fn new_program(&self, shaders: &[ShaderHandle]) -> ProgramHandle {
+        let registration = self.registration_handle();
+        Handle::new(shader::Program::new(shaders, registration))
     }
+
+    // Modify object contents
+    // TODO: Maybe move to be methods of the objects?
 
     pub fn vertex_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T]) {
         let vbo = vbo.access();
@@ -120,6 +123,8 @@ impl Context {
         vbo.sub_data(data, offset);
     }
 
+    // Mark objects to be used for drawing
+
     pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {
         self.shared_state.borrow_mut().vao_tracker.bind_for_drawing(vao.access())
     }
@@ -127,6 +132,8 @@ impl Context {
     pub fn use_program(&mut self, program: &ProgramHandle) {
         program.access().use_program();
     }
+
+    // Commands that do not (directly) consume resources
 
     pub fn draw_arrays(&mut self, first: u32, count: u32) {
         self.prepare_for_drawing();
@@ -142,6 +149,8 @@ impl Context {
         options::set_option(option);
     }
 
+    // Internal stuff
+
     fn prepare_for_drawing(&mut self) {
         self.shared_state.borrow_mut().vao_tracker.prepare_for_drawing();
     }
@@ -153,6 +162,10 @@ impl Context {
 
     fn bind_vao_for_editing(&mut self, vao: &VertexArray) {
         self.shared_state.borrow_mut().vao_tracker.bind_for_editing(vao);
+    }
+
+    fn registration_handle(&self) -> RegistrationHandle {
+        RegistrationHandle::new(self.shared_state.clone())
     }
 }
 

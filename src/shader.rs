@@ -4,7 +4,7 @@ use std::str::{Slice,Owned};
 use gl;
 use gl::types::{GLenum,GLint,GLsizei};
 
-use super::SharedContextStateHandle;
+use super::context::RegistrationHandle;
 use super::ShaderHandle;
 
 pub enum ShaderType {
@@ -14,14 +14,14 @@ pub enum ShaderType {
 
 pub struct Shader {
     id: u32,
-    context_shared: SharedContextStateHandle,
+    registration: RegistrationHandle,
 }
 
 impl Shader {
-    pub fn new(shader_type: ShaderType, source: &str, context_shared: SharedContextStateHandle) -> Shader {
+    pub fn new(shader_type: ShaderType, source: &str, registration: RegistrationHandle) -> Shader {
         let id = gl::CreateShader(shader_type_to_enum(shader_type));
         check_error!();
-        let shader = Shader { id: id, context_shared: context_shared };
+        let shader = Shader { id: id, registration: registration };
         shader.compile(source);
         shader
     }
@@ -87,27 +87,26 @@ impl Shader {
 #[unsafe_destructor]
 impl Drop for Shader {
     fn drop(&mut self) {
-        if !self.context_shared.borrow().is_alive {
-            return;
+        if self.registration.context_alive() {
+            gl::DeleteShader(self.id);
+            check_error!();
         }
-        gl::DeleteShader(self.id);
-        check_error!();
     }
 }
 
 pub struct Program {
     id: u32,
-    context_shared: SharedContextStateHandle,
+    registration: RegistrationHandle,
     shaders: Vec<ShaderHandle>
 }
 
 impl Program {
-    pub fn new(shaders: &[ShaderHandle], context_shared: SharedContextStateHandle) -> Program {
+    pub fn new(shaders: &[ShaderHandle], registration: RegistrationHandle) -> Program {
         let id = gl::CreateProgram();
         check_error!();
         let program = Program {
             id: id,
-            context_shared: context_shared,
+            registration: registration,
             shaders: shaders.to_vec()
         };
         program.link();
@@ -175,11 +174,10 @@ impl Program {
 #[unsafe_destructor]
 impl Drop for Program {
     fn drop(&mut self) {
-        if !self.context_shared.borrow().is_alive {
-            return;
+        if self.registration.context_alive() {
+            gl::DeleteProgram(self.id);
+            check_error!();
         }
-        gl::DeleteProgram(self.id);
-        check_error!();
     }
 }
 
