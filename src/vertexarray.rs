@@ -4,7 +4,6 @@ use gl::types::{GLenum,GLint,GLuint,GLboolean,GLsizei,GLvoid};
 
 use super::Context;
 use super::Bind;
-use super::util::check_error;
 
 use super::SharedContextStateHandle;
 use super::IndexBufferHandle;
@@ -51,7 +50,7 @@ impl VertexArray {
         let mut id: u32 = 0;
         unsafe {
             gl::GenVertexArrays(1, &mut id);
-            check_error();
+            check_error!();
         }
         let vertex_array = VertexArray {
             id: id,
@@ -104,7 +103,7 @@ impl VertexArray {
         let attribute_type = attribute_to_gl_type(attribute.attribute_type);
 
         gl::EnableVertexAttribArray(attribute.index);
-        check_error();
+        check_error!();
         unsafe {
             gl::VertexAttribPointer(
                 attribute.index as GLuint,
@@ -114,13 +113,13 @@ impl VertexArray {
                 attribute.stride as GLsizei,
                 attribute.offset as *const GLvoid
                 );
-            check_error();
+            check_error!();
         }
     }
 
     pub fn bind_vao_by_id(id: u32) {
         gl::BindVertexArray(id);
-        check_error();
+        check_error!();
     }
 }
 
@@ -134,7 +133,7 @@ impl Drop for VertexArray {
         context_shared.unregister_vertex_array(self.id);
         unsafe {
             gl::DeleteVertexArrays(1, &self.id);
-            check_error();
+            check_error!();
         }
     }
 }

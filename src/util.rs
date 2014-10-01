@@ -1,7 +1,7 @@
 
 use gl;
 
-pub fn check_error() {
+pub fn check_error(file: &str, line: uint) {
     let err_code = gl::GetError();
     if err_code != 0 {
         let message = match err_code {
@@ -14,7 +14,7 @@ pub fn check_error() {
             // gl::STACK_OVERFLOW => "GL_STACK_OVERFLOW",
             _ => "Unrecognized error code"
         };
-        println!("Error happened! Error: {} ({})", message, err_code);
+        println!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
         fail!();
     }
 }

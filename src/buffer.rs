@@ -5,7 +5,6 @@ use gl::types::{GLenum,GLsizeiptr,GLvoid};
 use std::mem::size_of;
 
 use super::Bind;
-use super::util::check_error;
 use super::SharedContextStateHandle;
 
 pub struct VertexBufferTag;
@@ -26,7 +25,7 @@ impl<T> BufferObject<T> {
         let mut id: u32 = 0;
         unsafe {
             gl::GenBuffers(1, &mut id);
-            check_error();
+            check_error!();
         }
         BufferObject { id: id, context_shared: context_shared, target: target }
     }
@@ -35,7 +34,7 @@ impl<T> BufferObject<T> {
         let data_size = (size_of::<D>() * data.len()) as GLsizeiptr;
         unsafe {
             gl::BufferData(self.target, data_size, data.as_ptr() as *const GLvoid, gl::STATIC_DRAW);
-            check_error();
+            check_error!();
         }
     }
 
@@ -43,7 +42,7 @@ impl<T> BufferObject<T> {
         let data_size = (size_of::<D>() * data.len()) as GLsizeiptr;
         unsafe {
             gl::BufferSubData(self.target, data_size, offset as GLsizeiptr, data.as_ptr() as *const GLvoid);
-            check_error();
+            check_error!();
         }
     }
 }
@@ -58,7 +57,7 @@ impl<T> Drop for BufferObject<T> {
         context_shared.unregister_buffer(self.id, self.target);
         unsafe {
             gl::DeleteBuffers(1, &self.id);
-            check_error();
+            check_error!();
         }
     }
 }

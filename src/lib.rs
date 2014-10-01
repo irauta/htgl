@@ -1,5 +1,5 @@
 
-#![feature(unsafe_destructor)]
+#![feature(unsafe_destructor,macro_rules)]
 
 extern crate core;
 extern crate gl;
@@ -13,8 +13,11 @@ use core::cell::RefCell;
 use std::rc::Rc;
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
-use util::check_error;
 use context::SharedContextState;
+
+macro_rules! check_error(
+    () => (::util::check_error(file!(), line!()));
+)
 
 mod buffer;
 mod util;
@@ -132,7 +135,7 @@ impl Context {
 
     pub fn clear(&mut self) {
         gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        check_error();
+        check_error!();
     }
 
     pub fn set_option(&mut self, option: RenderOption) {

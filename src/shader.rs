@@ -6,7 +6,6 @@ use gl::types::{GLenum,GLint,GLsizei};
 
 use super::SharedContextStateHandle;
 use super::ShaderHandle;
-use super::util::check_error;
 
 pub enum ShaderType {
     VertexShader,
@@ -21,7 +20,7 @@ pub struct Shader {
 impl Shader {
     pub fn new(shader_type: ShaderType, source: &str, context_shared: SharedContextStateHandle) -> Shader {
         let id = gl::CreateShader(shader_type_to_enum(shader_type));
-        check_error();
+        check_error!();
         let shader = Shader { id: id, context_shared: context_shared };
         shader.compile(source);
         shader
@@ -35,7 +34,7 @@ impl Shader {
         unsafe {
             let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
             gl::GetShaderInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);
-            check_error();
+            check_error!();
         }
         info_vec.pop(); // Remove the null byte from end
         match String::from_utf8(info_vec) {
@@ -53,10 +52,10 @@ impl Shader {
             let source_ptr = source.as_ptr() as *const i8;
             let source_ptr_ptr = &source_ptr as *const *const i8;
             gl::ShaderSource(self.id, 1, source_ptr_ptr, &length);
-            check_error();
+            check_error!();
 
             gl::CompileShader(self.id);
-            check_error();
+            check_error!();
             self.get_compile_status();
         }
     }
@@ -65,7 +64,7 @@ impl Shader {
         let mut compile_status = 0;
         unsafe {
             gl::GetShaderiv(self.id, gl::COMPILE_STATUS, &mut compile_status);
-            check_error();
+            check_error!();
         }
         let compile_status = compile_status != (gl::FALSE as i32);
         if !compile_status {
@@ -79,7 +78,7 @@ impl Shader {
         let mut info_length = 0;
         unsafe {
             gl::GetShaderiv(self.id, gl::INFO_LOG_LENGTH, &mut info_length);
-            check_error();
+            check_error!();
         }
         info_length
     }
@@ -92,7 +91,7 @@ impl Drop for Shader {
             return;
         }
         gl::DeleteShader(self.id);
-        check_error();
+        check_error!();
     }
 }
 
@@ -105,7 +104,7 @@ pub struct Program {
 impl Program {
     pub fn new(shaders: &[ShaderHandle], context_shared: SharedContextStateHandle) -> Program {
         let id = gl::CreateProgram();
-        check_error();
+        check_error!();
         let program = Program {
             id: id,
             context_shared: context_shared,
@@ -122,10 +121,10 @@ impl Program {
     fn link(&self) {
         for ref shader in self.shaders.iter() {
             gl::AttachShader(self.id, shader.access().id);
-            check_error();
+            check_error!();
         }
         gl::LinkProgram(self.id);
-        check_error();
+        check_error!();
         self.get_link_status();
     }
 
@@ -137,7 +136,7 @@ impl Program {
         unsafe {
             let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
             gl::GetProgramInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);
-            check_error();
+            check_error!();
         }
         info_vec.pop(); // Remove the null byte from end
         match String::from_utf8(info_vec) {
@@ -153,7 +152,7 @@ impl Program {
         let mut link_status = 0;
         unsafe {
             gl::GetProgramiv(self.id, gl::LINK_STATUS, &mut link_status);
-            check_error();
+            check_error!();
         }
         let link_status = link_status != (gl::FALSE as i32);
         if !link_status {
@@ -167,7 +166,7 @@ impl Program {
         let mut info_length = 0;
         unsafe {
             gl::GetProgramiv(self.id, gl::INFO_LOG_LENGTH, &mut info_length);
-            check_error();
+            check_error!();
         }
         info_length
     }
@@ -180,7 +179,7 @@ impl Drop for Program {
             return;
         }
         gl::DeleteProgram(self.id);
-        check_error();
+        check_error!();
     }
 }
 
