@@ -113,24 +113,24 @@ impl Context {
 
     pub fn vertex_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T]) {
         let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind(vbo);
+        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
         vbo.data(data);
     }
 
     pub fn vertex_sub_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T], offset: uint) {
         let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind(vbo);
+        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
         vbo.sub_data(data, offset);
     }
 
     // Mark objects to be used for drawing
 
     pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {
-        self.shared_state.borrow_mut().vao_tracker.bind_for_drawing(vao.access())
+        self.shared_state.borrow_mut().vao_tracker.bind_for_drawing(vao)
     }
 
     pub fn use_program(&mut self, program: &ProgramHandle) {
-        program.access().use_program();
+        self.shared_state.borrow_mut().program_tracker.bind_for_drawing(program);
     }
 
     // Commands that do not (directly) consume resources
@@ -152,12 +152,12 @@ impl Context {
     // Internal stuff
 
     fn prepare_for_drawing(&mut self) {
-        self.shared_state.borrow_mut().vao_tracker.prepare_for_drawing();
+        self.shared_state.borrow_mut().prepare_for_drawing();
     }
 
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBufferHandle) {
         let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind(vbo);
+        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
     }
 
     fn bind_vao_for_editing(&mut self, vao: &VertexArray) {

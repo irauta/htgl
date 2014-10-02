@@ -1,17 +1,18 @@
 
+use super::Handle;
 use super::Bind;
-use super::vertexarray::VertexArray;
 
 pub struct SimpleBindingTracker<T> {
-    currently_bound: u32
+    currently_bound: u32,
+    bound_for_drawing: Option<Handle<T>>
 }
 
 impl<T: Bind> SimpleBindingTracker<T> {
     pub fn new() -> SimpleBindingTracker<T> {
-        SimpleBindingTracker { currently_bound: 0 }
+        SimpleBindingTracker { currently_bound: 0, bound_for_drawing: None }
     }
 
-    pub fn bind(&mut self, resource: &T) {
+    pub fn bind_for_editing(&mut self, resource: &T) {
         let id = resource.get_id();
         if self.currently_bound != id {
             resource.bind();
@@ -19,50 +20,40 @@ impl<T: Bind> SimpleBindingTracker<T> {
         }
     }
 
+    pub fn bind_for_drawing(&mut self, resource: &Handle<T>) {
+        let resource_id = resource.access().get_id();
+        if !self.is_bound_for_drawing(resource_id) {
+            self.bound_for_drawing = Some(resource.clone());
+        }
+    }
+
+    pub fn prepare_for_drawing(&mut self) {
+        match self.bound_for_drawing {
+            Some(ref bound_for_drawing) => {
+                let resource = bound_for_drawing.access();
+                let id = resource.get_id();
+                if self.currently_bound != id {
+                    resource.bind();
+                    self.currently_bound = id;
+                }
+            },
+            None => {}
+        }
+    }
+
     pub fn unregister(&mut self, id: u32) {
         if self.currently_bound == id {
             self.currently_bound = 0;
         }
-    }
-}
-
-pub struct VertexArrayTracker {
-    currently_bound: u32,
-    bound_for_drawing: u32
-}
-
-impl VertexArrayTracker {
-    pub fn new() -> VertexArrayTracker {
-        VertexArrayTracker { currently_bound: 0, bound_for_drawing: 0 }
-    }
-
-    pub fn bind_for_editing(&mut self, vertex_array: &VertexArray) {
-        let id = vertex_array.get_id();
-        if self.currently_bound != id {
-            vertex_array.bind();
-            self.currently_bound = id;
+        if self.is_bound_for_drawing(id) {
+            self.bound_for_drawing = None;
         }
     }
 
-    pub fn bind_for_drawing(&mut self, vertex_array: &VertexArray) {
-        let id = vertex_array.get_id();
-        self.bound_for_drawing = id;
-    }
-
-    pub fn prepare_for_drawing(&mut self) {
-        let draw_id = self.bound_for_drawing;
-        if self.currently_bound != draw_id {
-            VertexArray::bind_vao_by_id(draw_id);
-            self.currently_bound = draw_id;
-        }
-    }
-
-    pub fn unregister(&mut self, vao_id: u32) {
-        if self.currently_bound == vao_id {
-            self.currently_bound = 0;
-        }
-        if self.bound_for_drawing == vao_id {
-            self.bound_for_drawing = 0;
+    fn is_bound_for_drawing(&self, id: u32) -> bool {
+        match self.bound_for_drawing {
+            Some(ref bound_for_drawing) => bound_for_drawing.access().get_id() == id,
+            None => false
         }
     }
 }

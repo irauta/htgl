@@ -5,22 +5,31 @@ use std::rc::Rc;
 use gl;
 use gl::types::GLenum;
 
-use super::tracker::{SimpleBindingTracker,VertexArrayTracker};
+use super::tracker::SimpleBindingTracker;
 use super::buffer::VertexBuffer;
+use super::shader::Program;
+use super::vertexarray::VertexArray;
 
 pub struct SharedContextState {
     pub is_alive: bool,
+    pub program_tracker: SimpleBindingTracker<Program>,
     pub vbo_tracker: SimpleBindingTracker<VertexBuffer>,
-    pub vao_tracker: VertexArrayTracker
+    pub vao_tracker: SimpleBindingTracker<VertexArray>
 }
 
 impl SharedContextState {
     pub fn new() -> SharedContextState {
         SharedContextState {
             is_alive: true,
+            program_tracker: SimpleBindingTracker::new(),
             vbo_tracker: SimpleBindingTracker::new(),
-            vao_tracker: VertexArrayTracker::new()
+            vao_tracker: SimpleBindingTracker::new()
         }
+    }
+
+    pub fn prepare_for_drawing(&mut self) {
+        self.program_tracker.prepare_for_drawing();
+        self.vao_tracker.prepare_for_drawing();
     }
 
     pub fn unregister_vertex_array(&mut self, id: u32) {

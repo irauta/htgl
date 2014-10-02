@@ -4,6 +4,7 @@ use std::str::{Slice,Owned};
 use gl;
 use gl::types::{GLenum,GLint,GLsizei};
 
+use super::Bind;
 use super::context::RegistrationHandle;
 use super::ShaderHandle;
 
@@ -113,7 +114,7 @@ impl Program {
         program
     }
 
-    pub fn use_program(&self) {
+    fn use_program(&self) {
         gl::UseProgram(self.id);
     }
 
@@ -178,6 +179,16 @@ impl Drop for Program {
             gl::DeleteProgram(self.id);
             check_error!();
         }
+    }
+}
+
+impl Bind for Program {
+    fn bind(&self) {
+        self.use_program();
+    }
+
+    fn get_id(&self) -> u32 {
+        self.id
     }
 }
 
