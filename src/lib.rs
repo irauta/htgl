@@ -1,5 +1,5 @@
 
-#![feature(unsafe_destructor,macro_rules)]
+#![feature(unsafe_destructor,macro_rules,slicing_syntax,if_let)]
 
 extern crate core;
 extern crate gl;
@@ -8,6 +8,8 @@ pub use gl::load_with;
 pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsignedByte,AttributeShort,AttributeUnsignedShort,AttributeInt,AttributeUnsignedInt,AttributeHalfFloat,AttributeFloat,AttributeDouble,AttributeInt2101010Rev,AttributeUnsignedInt2101010Rev};
 pub use shader::{ShaderType,VertexShader,FragmentShader};
 pub use options::{RenderOption,ClearColor,DepthTest};
+pub use draw::Drawer;
+pub use editor::{VertexBufferEditor,IndexBufferEditor};
 
 use core::cell::RefCell;
 use std::rc::Rc;
@@ -27,6 +29,7 @@ mod shader;
 mod options;
 mod draw;
 mod context;
+mod editor;
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
@@ -108,36 +111,24 @@ impl Context {
         Handle::new(shader::Program::new(shaders, registration))
     }
 
-    // Modify object contents
-    // TODO: Maybe move to be methods of the objects?
+    // Modify object contents with the help of editor objects
 
-    pub fn vertex_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T]) {
-        let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
-        vbo.data(data);
+    pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a VertexBufferHandle) -> VertexBufferEditor {
+        VertexBufferEditor::new(self, vbo.access())
     }
 
-    pub fn vertex_sub_data<T>(&mut self, vbo: &VertexBufferHandle, data: &[T], offset: uint) {
-        let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
-        vbo.sub_data(data, offset);
-    }
-
-    // Mark objects to be used for drawing
-
-    pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {
-        self.shared_state.borrow_mut().vao_tracker.bind_for_drawing(vao)
-    }
-
-    pub fn use_program(&mut self, program: &ProgramHandle) {
-        self.shared_state.borrow_mut().program_tracker.bind_for_drawing(program);
+    pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<IndexBufferEditor> {
+        let vao = vao.access();
+        match vao.index_buffer() {
+            Some(_) => Some(IndexBufferEditor::new(self, vao)),
+            None => None
+        }
     }
 
     // Commands that do not (directly) consume resources
 
-    pub fn draw_arrays(&mut self, first: u32, count: u32) {
-        self.prepare_for_drawing();
-        draw::draw_arrays(first, count);
+    pub fn drawer<'a>(&'a mut self) -> Drawer {
+        Drawer::new(self)
     }
 
     pub fn clear(&mut self) {
@@ -151,17 +142,13 @@ impl Context {
 
     // Internal stuff
 
-    fn prepare_for_drawing(&mut self) {
-        self.shared_state.borrow_mut().prepare_for_drawing();
-    }
-
-    fn bind_vbo_for_editing(&mut self, vbo: &VertexBufferHandle) {
+    fn bind_vbo(&mut self, vbo: &VertexBufferHandle) {
         let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind_for_editing(vbo);
+        self.shared_state.borrow_mut().vbo_tracker.bind(vbo);
     }
 
-    fn bind_vao_for_editing(&mut self, vao: &VertexArray) {
-        self.shared_state.borrow_mut().vao_tracker.bind_for_editing(vao);
+    fn bind_vao(&mut self, vao: &VertexArray) {
+        self.shared_state.borrow_mut().vao_tracker.bind(vao);
     }
 
     fn registration_handle(&self) -> RegistrationHandle {

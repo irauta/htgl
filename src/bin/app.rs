@@ -87,14 +87,11 @@ fn main() {
         Vertex::new(0.5f32, -0.5f32, 0f32, 0, 255, 0, 0),
         Vertex::new(0f32, 0.5f32, 0f32, 0, 0, 255, 0)
         ];
-    ctx.vertex_data(&vbo, &vertices);
+    ctx.edit_vertex_buffer(&vbo).data(&vertices);
     let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
-    ctx.use_vertex_array(&vao);
-
     let vs = ctx.new_shader(VertexShader, vs_source);
     let fs = ctx.new_shader(FragmentShader, fs_source);
     let program = ctx.new_program(&[vs, fs]);
-    ctx.use_program(&program);
 
     while !window.should_close() {
         glfw.poll_events();
@@ -103,7 +100,10 @@ fn main() {
         }
 
         ctx.clear();
-        ctx.draw_arrays(0, 3);
+        let drawer = ctx.drawer();
+        drawer.use_vertex_array(&vao);
+        drawer.use_program(&program);
+        drawer.draw_arrays(0, 3);
 
         window.swap_buffers();
     }

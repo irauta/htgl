@@ -27,11 +27,6 @@ impl SharedContextState {
         }
     }
 
-    pub fn prepare_for_drawing(&mut self) {
-        self.program_tracker.prepare_for_drawing();
-        self.vao_tracker.prepare_for_drawing();
-    }
-
     pub fn unregister_vertex_array(&mut self, id: u32) {
         self.vao_tracker.unregister(id);
     }
