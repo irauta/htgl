@@ -148,15 +148,6 @@ impl Context {
         Renderer::new(self)
     }
 
-    pub fn clear(&mut self) {
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-        check_error!();
-    }
-
-    pub fn set_option(&mut self, option: RenderOption) {
-        options::set_option(option);
-    }
-
     // Internal stuff
 
     fn bind_vbo(&mut self, vbo: &VertexBufferHandle) {

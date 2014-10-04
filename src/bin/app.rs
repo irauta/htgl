@@ -79,8 +79,8 @@ fn main() {
     mog::load_with(|s| window.get_proc_address(s));
 
     let mut ctx = mog::Context::new();
-    ctx.set_option(ClearColor(1f32, 1f32, 1f32, 1f32));
-    ctx.set_option(DepthTest(false));
+    ctx.renderer().set_option(ClearColor(1f32, 1f32, 1f32, 1f32));
+    ctx.renderer().set_option(DepthTest(false));
     let vbo = ctx.new_vertex_buffer();
     let vertices = [
         Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
@@ -99,8 +99,8 @@ fn main() {
             handle_window_event(&window, event);
         }
 
-        ctx.clear();
         let mut renderer = ctx.renderer();
+        renderer.clear();
         renderer.use_vertex_array(&vao);
         renderer.use_program(&program);
         renderer.draw_arrays(0, 3);
