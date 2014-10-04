@@ -6,6 +6,7 @@ use std::mem::size_of;
 
 use super::Bind;
 use super::context::RegistrationHandle;
+use super::tracker::TrackerId;
 
 pub struct VertexBufferTag;
 pub struct IndexBufferTag;
@@ -16,18 +17,19 @@ pub type IndexBuffer = BufferObject<IndexBufferTag>;
 
 pub struct BufferObject<T> {
     pub id: u32,
+    tracker_id: TrackerId,
     registration: RegistrationHandle,
     target: GLenum
 }
 
 impl<T> BufferObject<T> {
-    fn new(target: GLenum, registration: RegistrationHandle) -> BufferObject<T> {
+    fn new(tracker_id: TrackerId, target: GLenum, registration: RegistrationHandle) -> BufferObject<T> {
         let mut id: u32 = 0;
         unsafe {
             gl::GenBuffers(1, &mut id);
             check_error!();
         }
-        BufferObject { id: id, registration: registration, target: target }
+        BufferObject { id: id, tracker_id: tracker_id, registration: registration, target: target }
     }
 
     pub fn data<D>(&self, data: &[D]) {
@@ -51,7 +53,6 @@ impl<T> BufferObject<T> {
 impl<T> Drop for BufferObject<T> {
     fn drop(&mut self) {
         if self.registration.context_alive() {
-            self.registration.unregister_buffer(self.id, self.target);
             unsafe {
                 gl::DeleteBuffers(1, &self.id);
                 check_error!();
@@ -71,15 +72,15 @@ impl<T> Bind for BufferObject<T> {
         gl::BindBuffer(self.target, self.id);
     }
 
-    fn get_id(&self) -> u32 {
-        self.id
+    fn get_id(&self) -> TrackerId {
+        self.tracker_id
     }
 }
 
-pub fn new_vertex_buffer(registration: RegistrationHandle) -> VertexBuffer {
-    BufferObject::new(gl::ARRAY_BUFFER, registration)
+pub fn new_vertex_buffer(tracker_id: TrackerId, registration: RegistrationHandle) -> VertexBuffer {
+    BufferObject::new(tracker_id, gl::ARRAY_BUFFER, registration)
 }
 
-pub fn new_index_buffer(registration: RegistrationHandle) -> IndexBuffer {
-    BufferObject::new(gl::ELEMENT_ARRAY_BUFFER, registration)
+pub fn new_index_buffer(tracker_id: TrackerId, registration: RegistrationHandle) -> IndexBuffer {
+    BufferObject::new(tracker_id, gl::ELEMENT_ARRAY_BUFFER, registration)
 }

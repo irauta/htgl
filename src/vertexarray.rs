@@ -9,6 +9,7 @@ use super::context::RegistrationHandle;
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 use super::buffer::IndexBuffer;
+use super::tracker::TrackerId;
 
 #[deriving(Clone,Show)]
 pub enum AttributeType {
@@ -38,6 +39,7 @@ pub struct VertexAttribute {
 
 pub struct VertexArray {
     pub id: u32,
+    tracker_id: TrackerId,
     registration: RegistrationHandle,
     vertex_attributes: Vec<VertexAttribute>,
     index_buffer: Option<IndexBufferHandle>
@@ -45,6 +47,7 @@ pub struct VertexArray {
 
 impl VertexArray {
     pub fn new(ctx: &mut Context,
+               tracker_id: TrackerId,
                attributes: &[VertexAttribute],
                index_buffer: Option<IndexBufferHandle>,
                registration: RegistrationHandle) -> VertexArray {
@@ -55,6 +58,7 @@ impl VertexArray {
         }
         let vertex_array = VertexArray {
             id: id,
+            tracker_id: tracker_id,
             registration: registration,
             vertex_attributes: attributes.to_vec(),
             index_buffer: index_buffer
@@ -71,6 +75,7 @@ impl VertexArray {
     }
 
     pub fn new_single_vbo(ctx: &mut Context,
+                          tracker_id: TrackerId,
                           attributes: &[(u8, AttributeType, bool)],
                           vertex_buffer: VertexBufferHandle,
                           index_buffer: Option<IndexBufferHandle>,
@@ -96,7 +101,7 @@ impl VertexArray {
         for ref mut attr in full_attributes.iter_mut() {
             attr.stride = stride;
         }
-        VertexArray::new(ctx, full_attributes.as_slice(), index_buffer, registration)
+        VertexArray::new(ctx, tracker_id, full_attributes.as_slice(), index_buffer, registration)
     }
 
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {
@@ -130,7 +135,6 @@ impl VertexArray {
 impl Drop for VertexArray {
     fn drop(&mut self) {
         if self.registration.context_alive() {
-            self.registration.unregister_vertex_array(self.id);
             unsafe {
                 gl::DeleteVertexArrays(1, &self.id);
                 check_error!();
@@ -145,8 +149,8 @@ impl Bind for VertexArray {
         check_error!();
     }
 
-    fn get_id(&self) -> u32 {
-        self.id
+    fn get_id(&self) -> TrackerId {
+        self.tracker_id
     }
 }
 

@@ -100,7 +100,7 @@ fn main() {
         }
 
         ctx.clear();
-        let drawer = ctx.drawer();
+        let mut drawer = ctx.drawer();
         drawer.use_vertex_array(&vao);
         drawer.use_program(&program);
         drawer.draw_arrays(0, 3);

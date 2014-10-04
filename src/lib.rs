@@ -16,6 +16,8 @@ use std::rc::Rc;
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
 use context::{SharedContextState,RegistrationHandle};
+use tracker::{SimpleBindingTracker,TrackerIdGenerator,TrackerId};
+use shader::Program;
 
 macro_rules! check_error(
     () => (::util::check_error(file!(), line!()));
@@ -40,7 +42,7 @@ pub type ProgramHandle = Handle<shader::Program>;
 
 trait Bind {
     fn bind(&self);
-    fn get_id(&self) -> u32;
+    fn get_id(&self) -> TrackerId;
 }
 
 
@@ -66,31 +68,44 @@ impl<T> Clone for Handle<T> {
 
 
 pub struct Context {
+    id_generator: TrackerIdGenerator,
+    program_tracker: SimpleBindingTracker<Program>,
+    vbo_tracker: SimpleBindingTracker<VertexBuffer>,
+    vao_tracker: SimpleBindingTracker<VertexArray>,
     shared_state: Rc<RefCell<SharedContextState>>
 }
 
 impl Context {
     pub fn new() -> Context {
-        Context { shared_state: Rc::new(RefCell::new(SharedContextState::new())) }
+        Context {
+            id_generator: TrackerIdGenerator::new(),
+            program_tracker: SimpleBindingTracker::new(),
+            vbo_tracker: SimpleBindingTracker::new(),
+            vao_tracker: SimpleBindingTracker::new(),
+            shared_state: Rc::new(RefCell::new(SharedContextState::new()))
+        }
     }
 
     // Construct new objects
 
     pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
         let registration = self.registration_handle();
-        Handle::new(buffer::new_vertex_buffer(registration))
+        let id = self.id_generator.new_id();
+        Handle::new(buffer::new_vertex_buffer(id, registration))
     }
 
     pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
         let registration = self.registration_handle();
-        Handle::new(buffer::new_index_buffer(registration))
+        let id = self.id_generator.new_id();
+        Handle::new(buffer::new_index_buffer(id, registration))
     }
 
     pub fn new_vertex_array(&mut self,
                             attributes: &[VertexAttribute],
                             index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
-        Handle::new(vertexarray::VertexArray::new(self, attributes, index_buffer, registration))
+        let id = self.id_generator.new_id();
+        Handle::new(vertexarray::VertexArray::new(self, id, attributes, index_buffer, registration))
     }
 
     pub fn new_vertex_array_simple(&mut self,
@@ -98,17 +113,19 @@ impl Context {
                                    vertex_buffer: VertexBufferHandle,
                                    index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
-        Handle::new(vertexarray::VertexArray::new_single_vbo(self, attributes, vertex_buffer, index_buffer, registration))
+        let id = self.id_generator.new_id();
+        Handle::new(vertexarray::VertexArray::new_single_vbo(self, id, attributes, vertex_buffer, index_buffer, registration))
     }
 
-    pub fn new_shader(&self, shader_type: ShaderType, source: &str) -> ShaderHandle {
+    pub fn new_shader(&mut self, shader_type: ShaderType, source: &str) -> ShaderHandle {
         let registration = self.registration_handle();
         Handle::new(shader::Shader::new(shader_type, source, registration))
     }
 
-    pub fn new_program(&self, shaders: &[ShaderHandle]) -> ProgramHandle {
+    pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
         let registration = self.registration_handle();
-        Handle::new(shader::Program::new(shaders, registration))
+        let id = self.id_generator.new_id();
+        Handle::new(shader::Program::new(id, shaders, registration))
     }
 
     // Modify object contents with the help of editor objects
@@ -144,11 +161,11 @@ impl Context {
 
     fn bind_vbo(&mut self, vbo: &VertexBufferHandle) {
         let vbo = vbo.access();
-        self.shared_state.borrow_mut().vbo_tracker.bind(vbo);
+        self.vbo_tracker.bind(vbo);
     }
 
     fn bind_vao(&mut self, vao: &VertexArray) {
-        self.shared_state.borrow_mut().vao_tracker.bind(vao);
+        self.vao_tracker.bind(vao);
     }
 
     fn registration_handle(&self) -> RegistrationHandle {
@@ -159,6 +176,6 @@ impl Context {
 #[unsafe_destructor]
 impl Drop for Context {
     fn drop(&mut self) {
-        self.shared_state.borrow_mut().is_alive = false;
+        self.shared_state.borrow_mut().context_alive = false;
     }
 }

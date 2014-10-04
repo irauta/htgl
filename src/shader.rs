@@ -7,6 +7,7 @@ use gl::types::{GLenum,GLint,GLsizei};
 use super::Bind;
 use super::context::RegistrationHandle;
 use super::ShaderHandle;
+use super::tracker::TrackerId;
 
 pub enum ShaderType {
     VertexShader,
@@ -97,16 +98,18 @@ impl Drop for Shader {
 
 pub struct Program {
     id: u32,
+    tracker_id: TrackerId,
     registration: RegistrationHandle,
     shaders: Vec<ShaderHandle>
 }
 
 impl Program {
-    pub fn new(shaders: &[ShaderHandle], registration: RegistrationHandle) -> Program {
+    pub fn new(tracker_id: TrackerId, shaders: &[ShaderHandle], registration: RegistrationHandle) -> Program {
         let id = gl::CreateProgram();
         check_error!();
         let program = Program {
             id: id,
+            tracker_id: tracker_id,
             registration: registration,
             shaders: shaders.to_vec()
         };
@@ -187,8 +190,8 @@ impl Bind for Program {
         self.use_program();
     }
 
-    fn get_id(&self) -> u32 {
-        self.id
+    fn get_id(&self) -> TrackerId {
+        self.tracker_id
     }
 }
 

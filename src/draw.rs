@@ -13,12 +13,12 @@ impl<'a> Drawer<'a> {
         Drawer { context: context }
     }
 
-    pub fn use_vertex_array(&self, vao: &VertexArrayHandle) {
-        self.context.shared_state.borrow_mut().vao_tracker.bind(vao.access());
+    pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {
+        self.context.vao_tracker.bind(vao.access());
     }
 
-    pub fn use_program(&self, program: &ProgramHandle) {
-        self.context.shared_state.borrow_mut().program_tracker.bind(program.access());
+    pub fn use_program(&mut self, program: &ProgramHandle) {
+        self.context.program_tracker.bind(program.access());
     }
 
     pub fn draw_arrays(&self, first: u32, count: u32) {
