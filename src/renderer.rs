@@ -4,13 +4,13 @@ use gl::types::{GLint,GLsizei};
 
 use super::{Context,VertexArrayHandle,ProgramHandle};
 
-pub struct Drawer<'a> {
+pub struct Renderer<'a> {
     context: &'a mut Context
 }
 
-impl<'a> Drawer<'a> {
-    pub fn new(context: &'a mut Context) -> Drawer<'a> {
-        Drawer { context: context }
+impl<'a> Renderer<'a> {
+    pub fn new(context: &'a mut Context) -> Renderer<'a> {
+        Renderer { context: context }
     }
 
     pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {

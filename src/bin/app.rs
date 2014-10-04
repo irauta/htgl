@@ -100,10 +100,10 @@ fn main() {
         }
 
         ctx.clear();
-        let mut drawer = ctx.drawer();
-        drawer.use_vertex_array(&vao);
-        drawer.use_program(&program);
-        drawer.draw_arrays(0, 3);
+        let mut renderer = ctx.renderer();
+        renderer.use_vertex_array(&vao);
+        renderer.use_program(&program);
+        renderer.draw_arrays(0, 3);
 
         window.swap_buffers();
     }
