@@ -33,14 +33,38 @@ pub struct IndexBufferEditor<'a> {
 }
 
 impl<'a> IndexBufferEditor<'a> {
-    pub fn data<D>(&mut self, data: &[D]) {
+    pub fn data_u8(&mut self, data: &[u8]) {
+        self.data(data);
+    }
+
+    pub fn data_u16(&mut self, data: &[u16]) {
+        self.data(data);
+    }
+
+    pub fn data_u32(&mut self, data: &[u32]) {
+        self.data(data);
+    }
+
+    pub fn sub_data_u8(&mut self, data: &[u8], offset: uint) {
+        self.sub_data(data, offset);
+    }
+
+    pub fn sub_data_u16(&mut self, data: &[u16], offset: uint) {
+        self.sub_data(data, offset);
+    }
+
+    pub fn sub_data_u32(&mut self, data: &[u32], offset: uint) {
+        self.sub_data(data, offset);
+    }
+
+    fn data<D>(&mut self, data: &[D]) {
         self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
             index_buffer.data(data);
         }
     }
 
-    pub fn sub_data<D>(&mut self, data: &[D], offset: uint) {
+    fn sub_data<D>(&mut self, data: &[D], offset: uint) {
         self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
             index_buffer.sub_data(data, offset);
