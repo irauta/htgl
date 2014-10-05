@@ -10,10 +10,6 @@ pub struct VertexBufferEditor<'a> {
 }
 
 impl<'a> VertexBufferEditor<'a> {
-    pub fn new(context: &'a mut Context, vertex_buffer: &'a VertexBuffer) -> VertexBufferEditor<'a> {
-        VertexBufferEditor { context: context, vertex_buffer: vertex_buffer }
-    }
-
     pub fn data<D>(&mut self, data: &[D]) {
         self.context.vbo_tracker.bind(self.vertex_buffer);
         self.vertex_buffer.data(data);
@@ -25,6 +21,10 @@ impl<'a> VertexBufferEditor<'a> {
     }
 }
 
+pub fn new_vertex_buffer_editor<'a>(context: &'a mut Context, vertex_buffer: &'a VertexBuffer) -> VertexBufferEditor<'a> {
+    VertexBufferEditor { context: context, vertex_buffer: vertex_buffer }
+}
+
 
 pub struct IndexBufferEditor<'a> {
     #[allow(dead_code)]
@@ -33,10 +33,6 @@ pub struct IndexBufferEditor<'a> {
 }
 
 impl<'a> IndexBufferEditor<'a> {
-    pub fn new(context: &'a mut Context, vertex_array: &'a VertexArray) -> IndexBufferEditor<'a> {
-        IndexBufferEditor { context: context, vertex_array: vertex_array }
-    }
-
     pub fn data<D>(&mut self, data: &[D]) {
         self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
@@ -50,4 +46,8 @@ impl<'a> IndexBufferEditor<'a> {
             index_buffer.sub_data(data, offset);
         }
     }
+}
+
+pub fn new_index_buffer_editor<'a>(context: &'a mut Context, vertex_array: &'a VertexArray) -> IndexBufferEditor<'a> {
+    IndexBufferEditor { context: context, vertex_array: vertex_array }
 }

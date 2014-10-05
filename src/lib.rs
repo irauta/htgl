@@ -131,13 +131,13 @@ impl Context {
     // Modify object contents with the help of editor objects
 
     pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a VertexBufferHandle) -> VertexBufferEditor {
-        VertexBufferEditor::new(self, vbo.access())
+        editor::new_vertex_buffer_editor(self, vbo.access())
     }
 
     pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<IndexBufferEditor> {
         let vao = vao.access();
         match vao.index_buffer() {
-            Some(_) => Some(IndexBufferEditor::new(self, vao)),
+            Some(_) => Some(editor::new_index_buffer_editor(self, vao)),
             None => None
         }
     }
