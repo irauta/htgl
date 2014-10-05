@@ -7,8 +7,8 @@ extern crate gl;
 pub use gl::load_with;
 pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsignedByte,AttributeShort,AttributeUnsignedShort,AttributeInt,AttributeUnsignedInt,AttributeHalfFloat,AttributeFloat,AttributeDouble,AttributeInt2101010Rev,AttributeUnsignedInt2101010Rev};
 pub use shader::{ShaderType,VertexShader,FragmentShader};
-pub use options::{RenderOption,ClearColor,DepthTest};
-pub use renderer::Renderer;
+pub use options::{RenderOption,ClearColor,DepthTest,CullingEnabled};
+pub use renderer::{Renderer,PrimitiveMode,Triangles};
 pub use editor::{VertexBufferEditor,IndexBufferEditor};
 
 use core::cell::RefCell;

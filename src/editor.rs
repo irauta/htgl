@@ -15,9 +15,9 @@ impl<'a> VertexBufferEditor<'a> {
         self.vertex_buffer.data(data);
     }
 
-    pub fn sub_data<D>(&mut self, data: &[D], offset: uint) {
+    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
         self.context.vbo_tracker.bind(self.vertex_buffer);
-        self.vertex_buffer.sub_data(data, offset);
+        self.vertex_buffer.sub_data(data, byte_offset);
     }
 }
 
@@ -45,16 +45,16 @@ impl<'a> IndexBufferEditor<'a> {
         self.data(data);
     }
 
-    pub fn sub_data_u8(&mut self, data: &[u8], offset: uint) {
-        self.sub_data(data, offset);
+    pub fn sub_data_u8(&mut self, data: &[u8], byte_offset: uint) {
+        self.sub_data(data, byte_offset);
     }
 
-    pub fn sub_data_u16(&mut self, data: &[u16], offset: uint) {
-        self.sub_data(data, offset);
+    pub fn sub_data_u16(&mut self, data: &[u16], byte_offset: uint) {
+        self.sub_data(data, byte_offset);
     }
 
-    pub fn sub_data_u32(&mut self, data: &[u32], offset: uint) {
-        self.sub_data(data, offset);
+    pub fn sub_data_u32(&mut self, data: &[u32], byte_offset: uint) {
+        self.sub_data(data, byte_offset);
     }
 
     fn data<D>(&mut self, data: &[D]) {
@@ -64,10 +64,10 @@ impl<'a> IndexBufferEditor<'a> {
         }
     }
 
-    fn sub_data<D>(&mut self, data: &[D], offset: uint) {
+    fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
         self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
-            index_buffer.sub_data(data, offset);
+            index_buffer.sub_data(data, byte_offset);
         }
     }
 }

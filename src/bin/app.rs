@@ -1,11 +1,13 @@
 
+#![feature(if_let)]
+
 extern crate glfw;
 
 extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,VertexShader,FragmentShader};
+use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles};
 
 #[allow(dead_code)]
 #[repr(packed)]
@@ -81,14 +83,20 @@ fn main() {
     let mut ctx = mog::Context::new();
     ctx.renderer().set_option(ClearColor(1f32, 1f32, 1f32, 1f32));
     ctx.renderer().set_option(DepthTest(false));
+    ctx.renderer().set_option(CullingEnabled(true));
     let vbo = ctx.new_vertex_buffer();
     let vertices = [
         Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
         Vertex::new(0.5f32, -0.5f32, 0f32, 0, 255, 0, 0),
-        Vertex::new(0f32, 0.5f32, 0f32, 0, 0, 255, 0)
+        Vertex::new(0f32, 0.5f32, 0f32, 0, 0, 255, 0),
         ];
     ctx.edit_vertex_buffer(&vbo).data(&vertices);
-    let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, None);
+    let ibo = ctx.new_index_buffer();
+    let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, Some(ibo));
+    if let Some(mut editor) = ctx.edit_index_buffer(&vao) {
+        let indices = [0, 1, 2];
+        editor.data_u16(&indices);
+    }
     let vs = ctx.new_shader(VertexShader, vs_source);
     let fs = ctx.new_shader(FragmentShader, fs_source);
     let program = ctx.new_program(&[vs, fs]);
@@ -103,7 +111,7 @@ fn main() {
         renderer.clear();
         renderer.use_vertex_array(&vao);
         renderer.use_program(&program);
-        renderer.draw_arrays(0, 3);
+        renderer.draw_elements_u16(Triangles, 3, 0);
 
         window.swap_buffers();
     }
