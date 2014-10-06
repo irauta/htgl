@@ -9,7 +9,7 @@ pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsig
 pub use shader::{ShaderType,VertexShader,FragmentShader};
 pub use options::{RenderOption,ClearColor,DepthTest,CullingEnabled};
 pub use renderer::{Renderer,PrimitiveMode,Triangles};
-pub use editor::{VertexBufferEditor,IndexBufferEditor};
+pub use editor::{VertexBufferEditor,IndexBufferEditor,ProgramEditor,UniformTypeFloat,Uniform1f,Uniform2f,Uniform3f,Uniform4f,UniformTypeMatrix,UniformMatrix2f,UniformMatrix3f,UniformMatrix4f,UniformMatrix2x3f,UniformMatrix3x2f,UniformMatrix2x4f,UniformMatrix4x2f,UniformMatrix3x4f,UniformMatrix4x3f,UniformTypeInt,Uniform1i,Uniform2i,Uniform3i,Uniform4i,UniformTypeUint,Uniform1u,Uniform2u,Uniform3u,Uniform4u};
 
 use core::cell::RefCell;
 use std::rc::Rc;
@@ -142,6 +142,10 @@ impl Context {
         }
     }
 
+    pub fn edit_program<'a>(&'a mut self, program: &'a ProgramHandle) -> ProgramEditor {
+        editor::new_program_editor(self, program.access())
+    }
+
     // Commands that do not (directly) consume resources
 
     pub fn renderer<'a>(&'a mut self) -> Renderer {
@@ -150,13 +154,16 @@ impl Context {
 
     // Internal stuff
 
-    fn bind_vbo(&mut self, vbo: &VertexBufferHandle) {
-        let vbo = vbo.access();
+    fn bind_vbo(&mut self, vbo: &VertexBuffer) {
         self.vbo_tracker.bind(vbo);
     }
 
     fn bind_vao(&mut self, vao: &VertexArray) {
         self.vao_tracker.bind(vao);
+    }
+
+    fn bind_program(&mut self, program: &Program) {
+        self.program_tracker.bind(program);
     }
 
     fn registration_handle(&self) -> RegistrationHandle {

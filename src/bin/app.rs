@@ -1,5 +1,5 @@
 
-#![feature(if_let)]
+#![feature(slicing_syntax,if_let)]
 
 extern crate glfw;
 
@@ -7,7 +7,7 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles};
+use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles,Uniform1f};
 
 #[allow(dead_code)]
 #[repr(packed)]
@@ -45,10 +45,12 @@ static vs_source: &'static str = "
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 color;
 
+uniform float scale;
+
 out vec4 v_color;
 
 void main() {
-    gl_Position.xyz = position;
+    gl_Position.xyz = position * scale;
     gl_Position.w = 1.0;
     v_color = color;
 }
@@ -100,6 +102,18 @@ fn main() {
     let vs = ctx.new_shader(VertexShader, vs_source);
     let fs = ctx.new_shader(FragmentShader, fs_source);
     let program = ctx.new_program(&[vs, fs]);
+
+    {
+        let program_editor = ctx.edit_program(&program);
+        let uniforms = program_editor.get_active_uniforms();
+        let mut scale_location = -1;
+        for &(ref location, ref name) in uniforms.iter() {
+            if name[] == "scale" {
+                scale_location = *location;
+            }
+        }
+        program_editor.uniform_f32(scale_location, 1, Uniform1f, &[1.5]);
+    }
 
     while !window.should_close() {
         glfw.poll_events();

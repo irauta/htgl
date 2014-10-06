@@ -117,8 +117,33 @@ impl Program {
         program
     }
 
-    fn use_program(&self) {
-        gl::UseProgram(self.id);
+    pub fn get_active_uniforms(&self) -> Vec<(i32, String)> {
+        let mut uniforms = Vec::new();
+        let count = self.get_value(gl::ACTIVE_UNIFORMS) as u32;
+        if count == 0 {
+            return uniforms;
+        }
+        let max_length = self.get_value(gl::ACTIVE_UNIFORM_MAX_LENGTH);
+        for index in range(0, count) {
+            let mut name_vec = Vec::with_capacity(max_length as uint);
+            name_vec.grow(max_length as uint, 0u8);
+            let mut length = 0;
+            let mut size = 0;
+            let mut uniform_type = 0;
+            let mut location = 0;
+            unsafe {
+                let name_ptr = name_vec.as_mut_ptr() as *mut i8;
+                gl::GetActiveUniform(self.id, index, max_length, &mut length, &mut size, &mut uniform_type, name_ptr);
+                if length == 0 {
+                    continue;
+                }
+                name_vec.truncate(length as uint);
+                let name_ptr = name_vec.as_ptr() as *const i8;
+                location = gl::GetUniformLocation(self.id, name_ptr);
+            }
+            uniforms.push((location, vec_to_string(name_vec)));
+        }
+        uniforms
     }
 
     fn link(&self) {
@@ -132,7 +157,7 @@ impl Program {
     }
 
     fn get_info_log(&self) -> String {
-        let info_length = self.get_info_length();
+        let info_length = self.get_value(gl::INFO_LOG_LENGTH);
         let mut actual_info_length = 0;
         let mut info_vec = Vec::with_capacity(info_length as uint);
         info_vec.grow(info_length as uint, 0u8);
@@ -142,21 +167,11 @@ impl Program {
             check_error!();
         }
         info_vec.pop(); // Remove the null byte from end
-        match String::from_utf8(info_vec) {
-            Ok(info) => info,
-            Err(info_vec) => match String::from_utf8_lossy(info_vec[]) {
-                Owned(info) => info,
-                Slice(info_str) => String::from_str(info_str) // This one shouldn't probably happen
-            }
-        }
+        vec_to_string(info_vec)
     }
 
     fn get_link_status(&self) -> bool {
-        let mut link_status = 0;
-        unsafe {
-            gl::GetProgramiv(self.id, gl::LINK_STATUS, &mut link_status);
-            check_error!();
-        }
+        let link_status = self.get_value(gl::LINK_STATUS);
         let link_status = link_status != (gl::FALSE as i32);
         if !link_status {
             println!("Program info log:\n{}", self.get_info_log());
@@ -165,13 +180,13 @@ impl Program {
         link_status
     }
 
-    fn get_info_length(&self) -> GLsizei {
-        let mut info_length = 0;
+    fn get_value(&self, property: GLenum) -> i32 {
+        let mut value = 0;
         unsafe {
-            gl::GetProgramiv(self.id, gl::INFO_LOG_LENGTH, &mut info_length);
+            gl::GetProgramiv(self.id, property, &mut value);
             check_error!();
         }
-        info_length
+        value
     }
 }
 
@@ -187,7 +202,7 @@ impl Drop for Program {
 
 impl Bind for Program {
     fn bind(&self) {
-        self.use_program();
+        gl::UseProgram(self.id);
     }
 
     fn get_id(&self) -> TrackerId {
@@ -199,5 +214,16 @@ fn shader_type_to_enum(shader_type: ShaderType) -> GLenum {
     match shader_type {
         VertexShader => gl::VERTEX_SHADER,
         FragmentShader => gl::FRAGMENT_SHADER
+    }
+}
+
+/// Always shorten the vector to exclude the null byte!
+fn vec_to_string(vec: Vec<u8>) -> String {
+    match String::from_utf8(vec) {
+        Ok(string) => string,
+        Err(vec) => match String::from_utf8_lossy(vec[]) {
+            Owned(string) => string,
+            Slice(str_slice) => String::from_str(str_slice) // This one shouldn't probably happen
+        }
     }
 }

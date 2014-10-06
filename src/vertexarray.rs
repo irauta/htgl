@@ -105,7 +105,7 @@ impl VertexArray {
     }
 
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {
-        ctx.bind_vbo(&attribute.vertex_buffer);
+        ctx.bind_vbo(attribute.vertex_buffer.access());
         let attribute_type = attribute_to_gl_type(attribute.attribute_type);
 
         gl::EnableVertexAttribArray(attribute.index);
