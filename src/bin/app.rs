@@ -105,13 +105,7 @@ fn main() {
 
     {
         let program_editor = ctx.edit_program(&program);
-        let uniforms = program_editor.get_active_uniforms();
-        let mut scale_location = -1;
-        for &(ref location, ref name) in uniforms.iter() {
-            if name[] == "scale" {
-                scale_location = *location;
-            }
-        }
+        let scale_location = program_editor.get_uniform_location("scale");
         program_editor.uniform_f32(scale_location, 1, Uniform1f, &[1.5]);
     }
 

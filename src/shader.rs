@@ -117,6 +117,20 @@ impl Program {
         program
     }
 
+    pub fn get_uniform_location(&self, name: &str) -> i32 {
+        let c_name = name.to_c_str();
+        unsafe {
+            gl::GetUniformLocation(self.id, c_name.as_ptr())
+        }
+    }
+
+    pub fn get_uniform_block_index(&self, name: &str) -> u32 {
+        let c_name = name.to_c_str();
+        unsafe {
+            gl::GetUniformBlockIndex(self.id, c_name.as_ptr())
+        }
+    }
+
     pub fn get_active_uniforms(&self) -> Vec<(i32, String)> {
         let mut uniforms = Vec::new();
         let count = self.get_value(gl::ACTIVE_UNIFORMS) as u32;

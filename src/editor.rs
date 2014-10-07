@@ -127,6 +127,14 @@ pub struct ProgramEditor<'a> {
 }
 
 impl<'a> ProgramEditor<'a> {
+    pub fn get_uniform_location(&self, name: &str) -> i32 {
+        self.program.get_uniform_location(name)
+    }
+
+    pub fn get_uniform_block_index(&self, name: &str) -> u32 {
+        self.program.get_uniform_block_index(name)
+    }
+
     pub fn get_active_uniforms(&self) -> Vec<(i32, String)> {
         self.program.get_active_uniforms()
     }
