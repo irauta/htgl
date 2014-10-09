@@ -16,7 +16,7 @@ use std::rc::Rc;
 use buffer::VertexBuffer;
 use vertexarray::VertexArray;
 use context::{SharedContextState,RegistrationHandle};
-use tracker::{SimpleBindingTracker,TrackerIdGenerator,TrackerId};
+use tracker::{SimpleBindingTracker,RenderBindingTracker,TrackerIdGenerator,TrackerId};
 use shader::Program;
 
 macro_rules! check_error(
@@ -58,6 +58,10 @@ impl<T> Handle<T> {
     fn access(&self) -> &T {
         &*self.resource
     }
+
+    fn rc(&self) -> &Rc<T> {
+        &self.resource
+    }
 }
 
 impl<T> Clone for Handle<T> {
@@ -69,9 +73,9 @@ impl<T> Clone for Handle<T> {
 
 pub struct Context {
     id_generator: TrackerIdGenerator,
-    program_tracker: SimpleBindingTracker<Program>,
+    program_tracker: RenderBindingTracker<Program>,
     vbo_tracker: SimpleBindingTracker<VertexBuffer>,
-    vao_tracker: SimpleBindingTracker<VertexArray>,
+    vao_tracker: RenderBindingTracker<VertexArray>,
     shared_state: Rc<RefCell<SharedContextState>>
 }
 
@@ -79,9 +83,9 @@ impl Context {
     pub fn new() -> Context {
         Context {
             id_generator: TrackerIdGenerator::new(),
-            program_tracker: SimpleBindingTracker::new(),
+            program_tracker: RenderBindingTracker::new(),
             vbo_tracker: SimpleBindingTracker::new(),
-            vao_tracker: SimpleBindingTracker::new(),
+            vao_tracker: RenderBindingTracker::new(),
             shared_state: Rc::new(RefCell::new(SharedContextState::new()))
         }
     }
@@ -154,16 +158,29 @@ impl Context {
 
     // Internal stuff
 
-    fn bind_vbo(&mut self, vbo: &VertexBuffer) {
+    fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer) {
         self.vbo_tracker.bind(vbo);
     }
 
-    fn bind_vao(&mut self, vao: &VertexArray) {
-        self.vao_tracker.bind(vao);
+    fn bind_vao_for_editing(&mut self, vao: &VertexArray) {
+        self.vao_tracker.bind_for_editing(vao);
     }
 
-    fn bind_program(&mut self, program: &Program) {
-        self.program_tracker.bind(program);
+    fn bind_vao_for_rendering(&mut self, vao: &VertexArrayHandle) {
+        self.vao_tracker.bind_for_rendering(vao.rc());
+    }
+
+    fn bind_program_for_editing(&mut self, program: &Program) {
+        self.program_tracker.bind_for_editing(program);
+    }
+
+    fn bind_program_for_rendering(&mut self, program: &ProgramHandle) {
+        self.program_tracker.bind_for_rendering(program.rc());
+    }
+
+    fn prepare_for_rendering(&mut self) {
+        self.vao_tracker.restore_rendering_state();
+        self.program_tracker.restore_rendering_state();
     }
 
     fn registration_handle(&self) -> RegistrationHandle {

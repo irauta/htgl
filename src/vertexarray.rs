@@ -63,7 +63,7 @@ impl VertexArray {
             vertex_attributes: attributes.to_vec(),
             index_buffer: index_buffer
         };
-        ctx.bind_vao(&vertex_array);
+        ctx.bind_vao_for_editing(&vertex_array);
         for attribute in vertex_array.vertex_attributes.iter() {
             VertexArray::set_vertex_attribute(ctx, attribute);
         }
@@ -105,7 +105,7 @@ impl VertexArray {
     }
 
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {
-        ctx.bind_vbo(attribute.vertex_buffer.access());
+        ctx.bind_vbo_for_editing(attribute.vertex_buffer.access());
         let attribute_type = attribute_to_gl_type(attribute.attribute_type);
 
         gl::EnableVertexAttribArray(attribute.index);

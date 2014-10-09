@@ -16,18 +16,16 @@ pub struct VertexBufferEditor<'a> {
 
 impl<'a> VertexBufferEditor<'a> {
     pub fn data<D>(&mut self, data: &[D]) {
-        self.context.vbo_tracker.bind(self.vertex_buffer);
         self.vertex_buffer.data(data);
     }
 
     pub fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
-        self.context.vbo_tracker.bind(self.vertex_buffer);
         self.vertex_buffer.sub_data(data, byte_offset);
     }
 }
 
 pub fn new_vertex_buffer_editor<'a>(context: &'a mut Context, vertex_buffer: &'a VertexBuffer) -> VertexBufferEditor<'a> {
-    context.bind_vbo(vertex_buffer);
+    context.bind_vbo_for_editing(vertex_buffer);
     VertexBufferEditor { context: context, vertex_buffer: vertex_buffer }
 }
 
@@ -64,14 +62,12 @@ impl<'a> IndexBufferEditor<'a> {
     }
 
     fn data<D>(&mut self, data: &[D]) {
-        self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
             index_buffer.data(data);
         }
     }
 
     fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
-        self.context.vao_tracker.bind(self.vertex_array);
         if let Some(ref index_buffer) = self.vertex_array.index_buffer() {
             index_buffer.sub_data(data, byte_offset);
         }
@@ -79,7 +75,7 @@ impl<'a> IndexBufferEditor<'a> {
 }
 
 pub fn new_index_buffer_editor<'a>(context: &'a mut Context, vertex_array: &'a VertexArray) -> IndexBufferEditor<'a> {
-    context.bind_vao(vertex_array);
+    context.bind_vao_for_editing(vertex_array);
     IndexBufferEditor { context: context, vertex_array: vertex_array }
 }
 
@@ -256,6 +252,6 @@ fn validate_uniform<T, U: Show>(count: uint, uniform_type: U, element_count: uin
 }
 
 pub fn new_program_editor<'a>(context: &'a mut Context, program: &'a Program) -> ProgramEditor<'a> {
-    context.bind_program(program);
+    context.bind_program_for_editing(program);
     ProgramEditor { context: context, program: program }
 }

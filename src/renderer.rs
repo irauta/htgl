@@ -19,35 +19,37 @@ impl<'a> Renderer<'a> {
     }
 
     pub fn use_vertex_array(&mut self, vao: &VertexArrayHandle) {
-        self.context.vao_tracker.bind(vao.access());
+        self.context.bind_vao_for_rendering(vao);
     }
 
     pub fn use_program(&mut self, program: &ProgramHandle) {
-        self.context.program_tracker.bind(program.access());
+        self.context.bind_program_for_rendering(program);
     }
 
-    pub fn draw_arrays(&self, primitive_mode: PrimitiveMode, first: u32, count: u32) {
+    pub fn draw_arrays(&mut self, primitive_mode: PrimitiveMode, first: u32, count: u32) {
         let primitive_mode = gl_primitive_mode(primitive_mode);
+        self.context.prepare_for_rendering();
         gl::DrawArrays(primitive_mode, first as GLint, count as GLsizei);
         check_error!();
     }
 
-    pub fn draw_elements_u8(&self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
+    pub fn draw_elements_u8(&mut self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
         let primitive_mode = gl_primitive_mode(primitive_mode);
         self.draw_elements(primitive_mode, count, gl::UNSIGNED_BYTE, start);
     }
 
-    pub fn draw_elements_u16(&self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
+    pub fn draw_elements_u16(&mut self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
         let primitive_mode = gl_primitive_mode(primitive_mode);
         self.draw_elements(primitive_mode, count, gl::UNSIGNED_SHORT, start);
     }
 
-    pub fn draw_elements_u32(&self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
+    pub fn draw_elements_u32(&mut self, primitive_mode: PrimitiveMode, count: u32, start: u32) {
         let primitive_mode = gl_primitive_mode(primitive_mode);
         self.draw_elements(primitive_mode, count, gl::UNSIGNED_INT, start);
     }
 
-    fn draw_elements(&self, primitive_mode: GLenum, count: u32, index_type: GLenum, start: u32) {
+    fn draw_elements(&mut self, primitive_mode: GLenum, count: u32, index_type: GLenum, start: u32) {
+        self.context.prepare_for_rendering();
         unsafe {
             let start = start as *const GLvoid;
             gl::DrawElements(primitive_mode, count as GLint, index_type, start);

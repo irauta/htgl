@@ -1,4 +1,6 @@
 
+use std::rc::{Rc,Weak};
+
 use super::Bind;
 
 pub struct SimpleBindingTracker<T> {
@@ -15,6 +17,37 @@ impl<T: Bind> SimpleBindingTracker<T> {
         if self.currently_bound != id {
             resource.bind();
             self.currently_bound = id;
+        }
+    }
+}
+
+pub struct RenderBindingTracker<T> {
+    simple_tracker: SimpleBindingTracker<T>,
+    bound_for_rendering: Option<Weak<T>>
+}
+
+impl<T: Bind> RenderBindingTracker<T> {
+    pub fn new() -> RenderBindingTracker<T> {
+        RenderBindingTracker { simple_tracker: SimpleBindingTracker::new(), bound_for_rendering: None }
+    }
+
+    pub fn bind_for_editing(&mut self, resource: &T) {
+        self.simple_tracker.bind(resource);
+    }
+
+    pub fn bind_for_rendering(&mut self, resource: &Rc<T>) {
+        self.simple_tracker.bind(&**resource);
+        self.bound_for_rendering = Some(resource.downgrade());
+    }
+
+    pub fn restore_rendering_state(&mut self) {
+        let upgraded = match self.bound_for_rendering {
+            Some(ref weak) => weak.upgrade(),
+            None => return
+        };
+        match upgraded {
+            Some(resource) => self.simple_tracker.bind(&*resource),
+            None => self.bound_for_rendering = None
         }
     }
 }
