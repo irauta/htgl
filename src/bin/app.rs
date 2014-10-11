@@ -39,7 +39,7 @@ impl Vertex {
     }
 }
 
-static vs_source: &'static str = "
+static VS_SOURCE: &'static str = "
 #version 330 core
 
 layout(location = 0) in vec3 position;
@@ -56,7 +56,7 @@ void main() {
 }
 ";
 
-static fs_source: &'static str = "
+static FS_SOURCE: &'static str = "
 #version 330 core
 
 in vec4 v_color;
@@ -99,8 +99,8 @@ fn main() {
         let indices = [0, 1, 2];
         editor.data_u16(&indices);
     }
-    let vs = ctx.new_shader(VertexShader, vs_source);
-    let fs = ctx.new_shader(FragmentShader, fs_source);
+    let vs = ctx.new_shader(VertexShader, VS_SOURCE);
+    let fs = ctx.new_shader(FragmentShader, FS_SOURCE);
     let program = ctx.new_program(&[vs, fs]);
 
     {
