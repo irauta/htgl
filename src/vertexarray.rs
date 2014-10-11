@@ -8,7 +8,7 @@ use super::Bind;
 use super::context::RegistrationHandle;
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
-use super::buffer::IndexBuffer;
+use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
 
 #[deriving(Clone,Show)]

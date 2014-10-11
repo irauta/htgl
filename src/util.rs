@@ -1,4 +1,6 @@
 
+use std::str::{Slice,Owned};
+
 use gl;
 
 pub fn check_error(file: &str, line: uint) {
@@ -16,5 +18,16 @@ pub fn check_error(file: &str, line: uint) {
         };
         println!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
         fail!();
+    }
+}
+
+/// Always shorten the vector to exclude the null byte!
+pub fn vec_to_string(vec: Vec<u8>) -> String {
+    match String::from_utf8(vec) {
+        Ok(string) => string,
+        Err(vec) => match String::from_utf8_lossy(vec[]) {
+            Owned(string) => string,
+            Slice(str_slice) => String::from_str(str_slice) // This one shouldn't probably happen
+        }
     }
 }

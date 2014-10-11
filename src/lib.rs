@@ -9,15 +9,17 @@ pub use vertexarray::{VertexAttribute,AttributeType,AttributeByte,AttributeUnsig
 pub use shader::{ShaderType,VertexShader,FragmentShader};
 pub use options::{RenderOption,ClearColor,DepthTest,CullingEnabled};
 pub use renderer::{Renderer,PrimitiveMode,Triangles};
-pub use editor::{VertexBufferEditor,IndexBufferEditor,ProgramEditor,UniformTypeFloat,Uniform1f,Uniform2f,Uniform3f,Uniform4f,UniformTypeMatrix,UniformMatrix2f,UniformMatrix3f,UniformMatrix4f,UniformMatrix2x3f,UniformMatrix3x2f,UniformMatrix2x4f,UniformMatrix4x2f,UniformMatrix3x4f,UniformMatrix4x3f,UniformTypeInt,Uniform1i,Uniform2i,Uniform3i,Uniform4i,UniformTypeUint,Uniform1u,Uniform2u,Uniform3u,Uniform4u};
+pub use program::ProgramEditor;
+pub use buffer::vertexbuffer::VertexBufferEditor;
+pub use buffer::indexbuffer::IndexBufferEditor;
 
 use core::cell::RefCell;
 use std::rc::Rc;
-use buffer::VertexBuffer;
 use vertexarray::VertexArray;
 use context::{SharedContextState,RegistrationHandle};
 use tracker::{SimpleBindingTracker,RenderBindingTracker,TrackerIdGenerator,TrackerId};
-use shader::Program;
+use program::Program;
+use buffer::vertexbuffer::VertexBuffer;
 
 macro_rules! check_error(
     () => (::util::check_error(file!(), line!()));
@@ -28,16 +30,16 @@ mod util;
 mod tracker;
 mod vertexarray;
 mod shader;
+mod program;
 mod options;
 mod renderer;
 mod context;
-mod editor;
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
 pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
 pub type ShaderHandle = Handle<shader::Shader>;
-pub type ProgramHandle = Handle<shader::Program>;
+pub type ProgramHandle = Handle<program::Program>;
 
 
 trait Bind {
@@ -95,13 +97,13 @@ impl Context {
     pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(buffer::new_vertex_buffer(id, registration))
+        Handle::new(buffer::vertexbuffer::new_vertex_buffer(id, registration))
     }
 
     pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(buffer::new_index_buffer(id, registration))
+        Handle::new(buffer::indexbuffer::new_index_buffer(id, registration))
     }
 
     pub fn new_vertex_array(&mut self,
@@ -129,25 +131,25 @@ impl Context {
     pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(shader::Program::new(id, shaders, registration))
+        Handle::new(program::Program::new(id, shaders, registration))
     }
 
     // Modify object contents with the help of editor objects
 
     pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a VertexBufferHandle) -> VertexBufferEditor {
-        editor::new_vertex_buffer_editor(self, vbo.access())
+        buffer::vertexbuffer::new_vertex_buffer_editor(self, vbo.access())
     }
 
     pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<IndexBufferEditor> {
         let vao = vao.access();
         match vao.index_buffer() {
-            Some(_) => Some(editor::new_index_buffer_editor(self, vao)),
+            Some(_) => Some(buffer::indexbuffer::new_index_buffer_editor(self, vao)),
             None => None
         }
     }
 
     pub fn edit_program<'a>(&'a mut self, program: &'a ProgramHandle) -> ProgramEditor {
-        editor::new_program_editor(self, program.access())
+        program::new_program_editor(self, program.access())
     }
 
     // Commands that do not (directly) consume resources
@@ -193,4 +195,42 @@ impl Drop for Context {
     fn drop(&mut self) {
         self.shared_state.borrow_mut().context_alive = false;
     }
+}
+
+
+#[deriving(Show)]
+pub enum UniformTypeFloat {
+    Uniform1f,
+    Uniform2f,
+    Uniform3f,
+    Uniform4f
+}
+
+#[deriving(Show)]
+pub enum UniformTypeMatrix {
+    UniformMatrix2f,
+    UniformMatrix3f,
+    UniformMatrix4f,
+    UniformMatrix2x3f,
+    UniformMatrix3x2f,
+    UniformMatrix2x4f,
+    UniformMatrix4x2f,
+    UniformMatrix3x4f,
+    UniformMatrix4x3f
+}
+
+#[deriving(Show)]
+pub enum UniformTypeInt {
+    Uniform1i,
+    Uniform2i,
+    Uniform3i,
+    Uniform4i
+}
+
+#[deriving(Show)]
+pub enum UniformTypeUint {
+    Uniform1u,
+    Uniform2u,
+    Uniform3u,
+    Uniform4u
 }

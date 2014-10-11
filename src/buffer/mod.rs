@@ -8,12 +8,11 @@ use super::Bind;
 use super::context::RegistrationHandle;
 use super::tracker::TrackerId;
 
-pub struct VertexBufferTag;
-pub struct IndexBufferTag;
+pub use self::vertexbuffer::VertexBuffer;
+pub use self::indexbuffer::IndexBuffer;
 
-pub type VertexBuffer = BufferObject<VertexBufferTag>;
-pub type IndexBuffer = BufferObject<IndexBufferTag>;
-
+pub mod vertexbuffer;
+pub mod indexbuffer;
 
 pub struct BufferObject<T> {
     pub id: u32,
@@ -75,12 +74,4 @@ impl<T> Bind for BufferObject<T> {
     fn get_id(&self) -> TrackerId {
         self.tracker_id
     }
-}
-
-pub fn new_vertex_buffer(tracker_id: TrackerId, registration: RegistrationHandle) -> VertexBuffer {
-    BufferObject::new(tracker_id, gl::ARRAY_BUFFER, registration)
-}
-
-pub fn new_index_buffer(tracker_id: TrackerId, registration: RegistrationHandle) -> IndexBuffer {
-    BufferObject::new(tracker_id, gl::ELEMENT_ARRAY_BUFFER, registration)
 }
