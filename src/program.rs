@@ -5,8 +5,8 @@ use gl;
 use gl::types::GLenum;
 
 use super::util::vec_to_string;
-use super::{Bind,Context};
-use super::context::RegistrationHandle;
+use super::Bind;
+use super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::ShaderHandle;
 use super::tracker::TrackerId;
 use super::{UniformTypeFloat,UniformTypeInt,UniformTypeMatrix,UniformTypeUint};

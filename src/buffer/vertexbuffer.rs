@@ -1,8 +1,7 @@
 
 use gl;
 
-use super::super::Context;
-use super::super::context::RegistrationHandle;
+use super::super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::super::tracker::TrackerId;
 use super::BufferObject;
 

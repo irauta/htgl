@@ -2,12 +2,11 @@
 use gl;
 use gl::types::{GLint,GLsizei,GLvoid,GLenum};
 
-use super::{Context,VertexArrayHandle,ProgramHandle};
-use super::options::{mod,RenderOption};
+use super::{VertexArrayHandle,ProgramHandle};
+use super::context::{Context,ContextRenderingSupport};
+use super::options;
+use super::{RenderOption,PrimitiveMode};
 
-pub enum PrimitiveMode {
-    Triangles
-}
 
 pub struct Renderer<'a> {
     context: &'a mut Context
@@ -69,6 +68,6 @@ impl<'a> Renderer<'a> {
 
 fn gl_primitive_mode(primitive_mode: PrimitiveMode) -> GLenum {
     match primitive_mode {
-        Triangles => gl::TRIANGLES
+        super::Triangles => gl::TRIANGLES
     }
 }

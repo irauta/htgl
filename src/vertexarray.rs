@@ -5,26 +5,12 @@ use gl::types::{GLenum,GLint,GLuint,GLboolean,GLsizei,GLvoid};
 use super::Context;
 use super::Bind;
 
-use super::context::RegistrationHandle;
+use super::context::{RegistrationHandle,ContextEditingSupport};
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
-
-#[deriving(Clone,Show)]
-pub enum AttributeType {
-    AttributeByte,
-    AttributeUnsignedByte,
-    AttributeShort,
-    AttributeUnsignedShort,
-    AttributeInt,
-    AttributeUnsignedInt,
-    AttributeHalfFloat,
-    AttributeFloat,
-    AttributeDouble,
-    AttributeInt2101010Rev,
-    AttributeUnsignedInt2101010Rev
-}
+use super::AttributeType;
 
 #[deriving(Clone)]
 pub struct VertexAttribute {
@@ -156,32 +142,32 @@ impl Bind for VertexArray {
 
 fn attribute_to_gl_type(attribute_type: AttributeType) -> GLenum {
     match attribute_type {
-        AttributeByte => gl::BYTE,
-        AttributeUnsignedByte => gl::UNSIGNED_BYTE,
-        AttributeShort => gl::SHORT,
-        AttributeUnsignedShort => gl::UNSIGNED_SHORT,
-        AttributeInt => gl::INT,
-        AttributeUnsignedInt => gl::UNSIGNED_INT,
-        AttributeHalfFloat => gl::HALF_FLOAT,
-        AttributeFloat => gl::FLOAT,
-        AttributeDouble => gl::DOUBLE,
-        AttributeInt2101010Rev => gl::INT_2_10_10_10_REV,
-        AttributeUnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
+        super::AttributeByte => gl::BYTE,
+        super::AttributeUnsignedByte => gl::UNSIGNED_BYTE,
+        super::AttributeShort => gl::SHORT,
+        super::AttributeUnsignedShort => gl::UNSIGNED_SHORT,
+        super::AttributeInt => gl::INT,
+        super::AttributeUnsignedInt => gl::UNSIGNED_INT,
+        super::AttributeHalfFloat => gl::HALF_FLOAT,
+        super::AttributeFloat => gl::FLOAT,
+        super::AttributeDouble => gl::DOUBLE,
+        super::AttributeInt2101010Rev => gl::INT_2_10_10_10_REV,
+        super::AttributeUnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
     }
 }
 
 fn attribute_to_size(attribute_type: AttributeType) -> GLenum {
     match attribute_type {
-        AttributeByte => 1,
-        AttributeUnsignedByte => 1,
-        AttributeShort => 2,
-        AttributeUnsignedShort => 2,
-        AttributeInt => 4,
-        AttributeUnsignedInt => 4,
-        AttributeHalfFloat => 2,
-        AttributeFloat => 4,
-        AttributeDouble => 8,
-        AttributeInt2101010Rev => 4,
-        AttributeUnsignedInt2101010Rev => 4
+        super::AttributeByte => 1,
+        super::AttributeUnsignedByte => 1,
+        super::AttributeShort => 2,
+        super::AttributeUnsignedShort => 2,
+        super::AttributeInt => 4,
+        super::AttributeUnsignedInt => 4,
+        super::AttributeHalfFloat => 2,
+        super::AttributeFloat => 4,
+        super::AttributeDouble => 8,
+        super::AttributeInt2101010Rev => 4,
+        super::AttributeUnsignedInt2101010Rev => 4
     }
 }
