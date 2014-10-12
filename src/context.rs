@@ -2,8 +2,9 @@
 use core::cell::RefCell;
 use std::rc::Rc;
 
-use super::{Handle,ShaderType,AttributeType};
+use super::{ShaderType,AttributeType};
 use super::{VertexBufferHandle,IndexBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
+use super::handle::{new_handle,HandleAccess};
 use super::program::{mod,Program,ProgramEditor};
 use super::shader::Shader;
 use super::buffer;
@@ -37,13 +38,13 @@ impl Context {
     pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(buffer::vertexbuffer::new_vertex_buffer(id, registration))
+        new_handle(buffer::vertexbuffer::new_vertex_buffer(id, registration))
     }
 
     pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(buffer::indexbuffer::new_index_buffer(id, registration))
+        new_handle(buffer::indexbuffer::new_index_buffer(id, registration))
     }
 
     pub fn new_vertex_array(&mut self,
@@ -51,7 +52,7 @@ impl Context {
                             index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(VertexArray::new(self, id, attributes, index_buffer, registration))
+        new_handle(VertexArray::new(self, id, attributes, index_buffer, registration))
     }
 
     pub fn new_vertex_array_simple(&mut self,
@@ -60,18 +61,18 @@ impl Context {
                                    index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(VertexArray::new_single_vbo(self, id, attributes, vertex_buffer, index_buffer, registration))
+        new_handle(VertexArray::new_single_vbo(self, id, attributes, vertex_buffer, index_buffer, registration))
     }
 
     pub fn new_shader(&mut self, shader_type: ShaderType, source: &str) -> ShaderHandle {
         let registration = self.registration_handle();
-        Handle::new(Shader::new(shader_type, source, registration))
+        new_handle(Shader::new(shader_type, source, registration))
     }
 
     pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        Handle::new(Program::new(id, shaders, registration))
+        new_handle(Program::new(id, shaders, registration))
     }
 
     // Modify object contents with the help of editor objects

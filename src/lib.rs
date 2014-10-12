@@ -11,17 +11,17 @@ pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
 pub use context::Context;
 
-use std::rc::Rc;
-
 use vertexarray::VertexArray;
 use tracker::TrackerId;
 use program::Program;
 use buffer::vertexbuffer::VertexBuffer;
+use handle::Handle;
 
 macro_rules! check_error(
     () => (::util::check_error(file!(), line!()));
 )
 
+mod handle;
 mod buffer;
 mod util;
 mod tracker;
@@ -43,32 +43,6 @@ trait Bind {
     fn bind(&self);
     fn get_id(&self) -> TrackerId;
 }
-
-
-pub struct Handle<T> {
-    resource: Rc<T>
-}
-
-impl<T> Handle<T> {
-    fn new(resource: T) -> Handle<T> {
-        Handle { resource: Rc::new(resource) }
-    }
-
-    fn access(&self) -> &T {
-        &*self.resource
-    }
-
-    fn rc(&self) -> &Rc<T> {
-        &self.resource
-    }
-}
-
-impl<T> Clone for Handle<T> {
-    fn clone(&self) -> Handle<T> {
-        Handle { resource: self.resource.clone() }
-    }
-}
-
 
 pub enum PrimitiveMode {
     Triangles

@@ -6,6 +6,7 @@ use super::Context;
 use super::Bind;
 
 use super::context::{RegistrationHandle,ContextEditingSupport};
+use super::handle::HandleAccess;
 use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
