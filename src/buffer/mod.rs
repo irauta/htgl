@@ -10,9 +10,11 @@ use super::tracker::TrackerId;
 
 pub use self::vertexbuffer::VertexBuffer;
 pub use self::indexbuffer::IndexBuffer;
+pub use self::uniformbuffer::UniformBuffer;
 
 pub mod vertexbuffer;
 pub mod indexbuffer;
+pub mod uniformbuffer;
 
 pub struct BufferObject<T> {
     pub id: u32,

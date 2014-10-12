@@ -9,6 +9,7 @@ pub use renderer::Renderer;
 pub use program::ProgramEditor;
 pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
+pub use buffer::uniformbuffer::UniformBufferEditor;
 pub use context::Context;
 
 use vertexarray::VertexArray;
@@ -33,6 +34,7 @@ mod context;
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
+pub type UniformBufferHandle = Handle<buffer::UniformBuffer>;
 pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
 pub type ShaderHandle = Handle<shader::Shader>;
 pub type ProgramHandle = Handle<program::Program>;

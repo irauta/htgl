@@ -3,12 +3,13 @@ use core::cell::RefCell;
 use std::rc::Rc;
 
 use super::{ShaderType,AttributeType};
-use super::{VertexBufferHandle,IndexBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
+use super::{VertexBufferHandle,IndexBufferHandle,UniformBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
 use super::handle::{new_handle,HandleAccess};
 use super::program::{mod,Program,ProgramEditor};
 use super::shader::Shader;
 use super::buffer;
 use super::buffer::vertexbuffer::{VertexBuffer,VertexBufferEditor};
+use super::buffer::uniformbuffer::{UniformBuffer,UniformBufferEditor};
 use super::buffer::indexbuffer::IndexBufferEditor;
 use super::vertexarray::{VertexArray,VertexAttribute};
 use super::renderer::Renderer;
@@ -18,6 +19,7 @@ pub struct Context {
     id_generator: TrackerIdGenerator,
     program_tracker: RenderBindingTracker<Program>,
     vbo_tracker: SimpleBindingTracker<VertexBuffer>,
+    ubo_tracker: SimpleBindingTracker<UniformBuffer>,
     vao_tracker: RenderBindingTracker<VertexArray>,
     shared_state: Rc<RefCell<SharedContextState>>
 }
@@ -28,6 +30,7 @@ impl Context {
             id_generator: TrackerIdGenerator::new(),
             program_tracker: RenderBindingTracker::new(),
             vbo_tracker: SimpleBindingTracker::new(),
+            ubo_tracker: SimpleBindingTracker::new(),
             vao_tracker: RenderBindingTracker::new(),
             shared_state: Rc::new(RefCell::new(SharedContextState::new()))
         }
@@ -45,6 +48,12 @@ impl Context {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(buffer::indexbuffer::new_index_buffer(id, registration))
+    }
+
+    pub fn new_uniform_buffer(&mut self) -> UniformBufferHandle {
+        let registration = self.registration_handle();
+        let id = self.id_generator.new_id();
+        new_handle(buffer::uniformbuffer::new_uniform_buffer(id, registration))
     }
 
     pub fn new_vertex_array(&mut self,
@@ -89,6 +98,10 @@ impl Context {
         }
     }
 
+    pub fn edit_uniform_buffer<'a>(&'a mut self, ubo: &'a UniformBufferHandle) -> UniformBufferEditor {
+        buffer::uniformbuffer::new_uniform_buffer_editor(self, ubo.access())
+    }
+
     pub fn edit_program<'a>(&'a mut self, program: &'a ProgramHandle) -> ProgramEditor {
         program::new_program_editor(self, program.access())
     }
@@ -115,6 +128,7 @@ impl Drop for Context {
 
 pub trait ContextEditingSupport {
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer);
+    fn bind_ubo_for_editing(&mut self, vbo: &UniformBuffer);
     fn bind_vao_for_editing(&mut self, vao: &VertexArray);
     fn bind_program_for_editing(&mut self, program: &Program);
 }
@@ -122,6 +136,10 @@ pub trait ContextEditingSupport {
 impl ContextEditingSupport for Context {
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer) {
         self.vbo_tracker.bind(vbo);
+    }
+
+    fn bind_ubo_for_editing(&mut self, ubo: &UniformBuffer) {
+        self.ubo_tracker.bind(ubo);
     }
 
     fn bind_vao_for_editing(&mut self, vao: &VertexArray) {
