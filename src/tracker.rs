@@ -1,7 +1,10 @@
 
 use std::rc::{Rc,Weak};
 
-use super::Bind;
+pub trait Bind {
+    fn bind(&self);
+    fn get_id(&self) -> TrackerId;
+}
 
 pub struct SimpleBindingTracker<T> {
     currently_bound: TrackerId

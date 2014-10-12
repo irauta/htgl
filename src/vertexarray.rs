@@ -3,7 +3,7 @@ use gl;
 use gl::types::{GLenum,GLint,GLuint,GLboolean,GLsizei,GLvoid};
 
 use super::Context;
-use super::Bind;
+use super::tracker::Bind;
 
 use super::context::{RegistrationHandle,ContextEditingSupport};
 use super::handle::HandleAccess;

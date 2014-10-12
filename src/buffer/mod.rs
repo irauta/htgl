@@ -4,7 +4,7 @@ use gl::types::{GLenum,GLsizeiptr,GLvoid};
 
 use std::mem::size_of;
 
-use super::Bind;
+use super::tracker::Bind;
 use super::context::RegistrationHandle;
 use super::tracker::TrackerId;
 

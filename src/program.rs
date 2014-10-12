@@ -5,7 +5,7 @@ use gl;
 use gl::types::GLenum;
 
 use super::util::vec_to_string;
-use super::Bind;
+use super::tracker::Bind;
 use super::handle::HandleAccess;
 use super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::ShaderHandle;

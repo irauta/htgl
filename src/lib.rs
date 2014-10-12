@@ -12,7 +12,6 @@ pub use buffer::indexbuffer::IndexBufferEditor;
 pub use context::Context;
 
 use vertexarray::VertexArray;
-use tracker::TrackerId;
 use program::Program;
 use buffer::vertexbuffer::VertexBuffer;
 use handle::Handle;
@@ -38,11 +37,6 @@ pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
 pub type ShaderHandle = Handle<shader::Shader>;
 pub type ProgramHandle = Handle<program::Program>;
 
-
-trait Bind {
-    fn bind(&self);
-    fn get_id(&self) -> TrackerId;
-}
 
 pub enum PrimitiveMode {
     Triangles
