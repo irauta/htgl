@@ -31,6 +31,7 @@ mod program;
 mod options;
 mod renderer;
 mod context;
+mod info;
 
 pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
 pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;

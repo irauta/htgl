@@ -14,8 +14,10 @@ use super::buffer::indexbuffer::IndexBufferEditor;
 use super::vertexarray::{VertexArray,VertexAttribute};
 use super::renderer::Renderer;
 use super::tracker::{SimpleBindingTracker,RenderBindingTracker,TrackerIdGenerator};
+use super::info::{ContextInfo,build_info};
 
 pub struct Context {
+    info: ContextInfo,
     id_generator: TrackerIdGenerator,
     program_tracker: RenderBindingTracker<Program>,
     vbo_tracker: SimpleBindingTracker<VertexBuffer>,
@@ -27,6 +29,7 @@ pub struct Context {
 impl Context {
     pub fn new() -> Context {
         Context {
+            info: build_info(),
             id_generator: TrackerIdGenerator::new(),
             program_tracker: RenderBindingTracker::new(),
             vbo_tracker: SimpleBindingTracker::new(),
@@ -110,6 +113,11 @@ impl Context {
 
     pub fn renderer<'a>(&'a mut self) -> Renderer {
         Renderer::new(self)
+    }
+
+    // Expose context info to user too!
+    pub fn get_info(&self) -> &ContextInfo {
+        &self.info
     }
 
     // Internal stuff
