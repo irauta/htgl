@@ -33,6 +33,13 @@ impl Program {
         program
     }
 
+    pub fn get_attribute_location(&self, name: &str) -> i32 {
+        let c_name = name.to_c_str();
+        unsafe {
+            gl::GetAttribLocation(self.id, c_name.as_ptr())
+        }
+    }
+
     pub fn get_uniform_location(&self, name: &str) -> i32 {
         let c_name = name.to_c_str();
         unsafe {
@@ -147,6 +154,10 @@ pub struct ProgramEditor<'a> {
 }
 
 impl<'a> ProgramEditor<'a> {
+    pub fn get_attribute_location(&self, name: &str) -> i32 {
+        self.program.get_attribute_location(name)
+    }
+
     pub fn get_uniform_location(&self, name: &str) -> i32 {
         self.program.get_uniform_location(name)
     }
