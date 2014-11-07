@@ -72,38 +72,38 @@ pub enum ShaderType {
 }
 
 #[deriving(Show)]
-pub enum UniformTypeFloat {
-    Uniform1f,
-    Uniform2f,
-    Uniform3f,
-    Uniform4f
+pub enum SimpleUniformTypeFloat {
+    SimpleUniform1f,
+    SimpleUniform2f,
+    SimpleUniform3f,
+    SimpleUniform4f
 }
 
 #[deriving(Show)]
-pub enum UniformTypeMatrix {
-    UniformMatrix2f,
-    UniformMatrix3f,
-    UniformMatrix4f,
-    UniformMatrix2x3f,
-    UniformMatrix3x2f,
-    UniformMatrix2x4f,
-    UniformMatrix4x2f,
-    UniformMatrix3x4f,
-    UniformMatrix4x3f
+pub enum SimpleUniformTypeMatrix {
+    SimpleUniformMatrix2f,
+    SimpleUniformMatrix3f,
+    SimpleUniformMatrix4f,
+    SimpleUniformMatrix2x3f,
+    SimpleUniformMatrix3x2f,
+    SimpleUniformMatrix2x4f,
+    SimpleUniformMatrix4x2f,
+    SimpleUniformMatrix3x4f,
+    SimpleUniformMatrix4x3f
 }
 
 #[deriving(Show)]
-pub enum UniformTypeInt {
-    Uniform1i,
-    Uniform2i,
-    Uniform3i,
-    Uniform4i
+pub enum SimpleUniformTypeInt {
+    SimpleUniform1i,
+    SimpleUniform2i,
+    SimpleUniform3i,
+    SimpleUniform4i
 }
 
 #[deriving(Show)]
-pub enum UniformTypeUint {
-    Uniform1u,
-    Uniform2u,
-    Uniform3u,
-    Uniform4u
+pub enum SimpleUniformTypeUint {
+    SimpleUniform1u,
+    SimpleUniform2u,
+    SimpleUniform3u,
+    SimpleUniform4u
 }

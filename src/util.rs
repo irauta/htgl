@@ -16,8 +16,7 @@ pub fn check_error(file: &str, line: uint) {
             // gl::STACK_OVERFLOW => "GL_STACK_OVERFLOW",
             _ => "Unrecognized error code"
         };
-        println!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
-        fail!();
+        fail!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
     }
 }
 

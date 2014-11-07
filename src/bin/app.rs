@@ -7,7 +7,7 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles,Uniform1f};
+use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles,SimpleUniform1f};
 
 #[allow(dead_code)]
 #[repr(packed)]
@@ -47,10 +47,24 @@ layout(location = 1) in vec4 color;
 
 uniform float scale;
 
+uniform FooBlock {
+    float huh;
+    float hah;
+    float heh;
+    float hmh;
+} barBlock;
+
+uniform FooBlock2 {
+    float huh;
+    float hah;
+    float heh;
+    float hmh;
+} barBlock2;
+
 out vec4 v_color;
 
 void main() {
-    gl_Position.xyz = position * scale;
+    gl_Position.xyz = position * scale * barBlock.huh * barBlock2.huh;
     gl_Position.w = 1.0;
     v_color = color;
 }
@@ -107,7 +121,17 @@ fn main() {
     {
         let program_editor = ctx.edit_program(&program);
         let scale_location = program_editor.get_uniform_location("scale");
-        program_editor.uniform_f32(scale_location, 1, Uniform1f, &[1.5]);
+        program_editor.uniform_f32(scale_location, 1, SimpleUniform1f, &[1.5]);
+        let uniform_info = program_editor.get_uniform_info();
+        for uniform in uniform_info.globals.iter() {
+            println!("{}", uniform);
+        }
+        for block in uniform_info.blocks.iter() {
+            println!("InterfaceBlock {{ name: {}, index: {}, data_size: {} }}", block.name, block.index, block.data_size);
+            for uniform in block.uniforms.iter() {
+                println!("    {}", uniform);
+            }
+        }
     }
 
     while !window.should_close() {
@@ -123,6 +147,7 @@ fn main() {
         renderer.draw_elements_u16(Triangles, 3, 0);
 
         window.swap_buffers();
+        // break;
     }
 }
 
