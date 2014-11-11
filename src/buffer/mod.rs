@@ -70,7 +70,9 @@ impl<T> PartialEq for BufferObject<T> {
 
 impl<T> Bind for BufferObject<T> {
     fn bind(&self) {
-        gl::BindBuffer(self.target, self.id);
+        unsafe {
+            gl::BindBuffer(self.target, self.id);
+        }
     }
 
     fn get_id(&self) -> TrackerId {

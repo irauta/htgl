@@ -4,7 +4,7 @@ use std::str::{Slice,Owned};
 use gl;
 
 pub fn check_error(file: &str, line: uint) {
-    let err_code = gl::GetError();
+    let err_code = unsafe { gl::GetError() };
     if err_code != 0 {
         let message = match err_code {
             gl::INVALID_ENUM => "GL_INVALID_ENUM",
@@ -16,7 +16,7 @@ pub fn check_error(file: &str, line: uint) {
             // gl::STACK_OVERFLOW => "GL_STACK_OVERFLOW",
             _ => "Unrecognized error code"
         };
-        fail!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
+        panic!("OpenGL Error: {} ({}) at {}:{}", message, err_code, file, line);
     }
 }
 

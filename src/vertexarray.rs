@@ -95,7 +95,9 @@ impl VertexArray {
         ctx.bind_vbo_for_editing(attribute.vertex_buffer.access());
         let attribute_type = attribute_to_gl_type(attribute.attribute_type);
 
-        gl::EnableVertexAttribArray(attribute.index);
+        unsafe {
+            gl::EnableVertexAttribArray(attribute.index);
+        }
         check_error!();
         unsafe {
             gl::VertexAttribPointer(
@@ -132,7 +134,9 @@ impl Drop for VertexArray {
 
 impl Bind for VertexArray {
     fn bind(&self) {
-        gl::BindVertexArray(self.id);
+        unsafe {
+            gl::BindVertexArray(self.id);
+        }
         check_error!();
     }
 

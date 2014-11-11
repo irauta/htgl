@@ -13,7 +13,7 @@ pub struct Shader {
 
 impl Shader {
     pub fn new(shader_type: ShaderType, source: &str, registration: RegistrationHandle) -> Shader {
-        let id = gl::CreateShader(shader_type_to_enum(shader_type));
+        let id = unsafe { gl::CreateShader(shader_type_to_enum(shader_type)) };
         check_error!();
         let shader = Shader { id: id, registration: registration };
         shader.compile(source);
@@ -61,7 +61,7 @@ impl Shader {
         let compile_status = compile_status != (gl::FALSE as i32);
         if !compile_status {
             println!("Shader info log:\n{}", self.get_info_log());
-            fail!("Compiling failed");
+            panic!("Compiling shader failed");
         }
         compile_status
     }
@@ -80,7 +80,9 @@ impl Shader {
 impl Drop for Shader {
     fn drop(&mut self) {
         if self.registration.context_alive() {
-            gl::DeleteShader(self.id);
+            unsafe {
+                gl::DeleteShader(self.id)
+            };
             check_error!();
         }
     }

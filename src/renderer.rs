@@ -28,7 +28,9 @@ impl<'a> Renderer<'a> {
     pub fn draw_arrays(&mut self, primitive_mode: PrimitiveMode, first: u32, count: u32) {
         let primitive_mode = gl_primitive_mode(primitive_mode);
         self.context.prepare_for_rendering();
-        gl::DrawArrays(primitive_mode, first as GLint, count as GLsizei);
+        unsafe {
+            gl::DrawArrays(primitive_mode, first as GLint, count as GLsizei);
+        }
         check_error!();
     }
 
@@ -57,7 +59,9 @@ impl<'a> Renderer<'a> {
     }
 
     pub fn clear(&mut self) {
-        gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        unsafe {
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        }
         check_error!();
     }
 

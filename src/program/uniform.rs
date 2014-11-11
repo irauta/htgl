@@ -409,7 +409,7 @@ fn validate_uniform_i32(count: uint, uniform_type: SimpleUniformTypeInt, values:
 fn validate_uniform<T, U: Show>(count: uint, uniform_type: U, element_count: uint, values: &[T]) {
     let expected_len = count * element_count;
     if expected_len > values.len() {
-        fail!("Too small uniform value slice: {} of {} would take {} elements, but only got {}",
+        panic!("Too small uniform value slice: {} of {} would take {} elements, but only got {}",
             count, uniform_type, expected_len, values.len());
     }
 }

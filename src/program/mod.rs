@@ -23,7 +23,7 @@ pub struct Program {
 
 impl Program {
     pub fn new(tracker_id: TrackerId, shaders: &[ShaderHandle], registration: RegistrationHandle) -> Program {
-        let id = gl::CreateProgram();
+        let id = unsafe { gl::CreateProgram() };
         check_error!();
         let program = Program {
             id: id,
@@ -55,10 +55,14 @@ impl Program {
 
     fn link(&self) {
         for ref shader in self.shaders.iter() {
-            gl::AttachShader(self.id, shader.access().get_id());
+            unsafe {
+                gl::AttachShader(self.id, shader.access().get_id());
+            }
             check_error!();
         }
-        gl::LinkProgram(self.id);
+        unsafe {
+            gl::LinkProgram(self.id);
+        }
         check_error!();
         self.get_link_status();
     }
@@ -82,7 +86,7 @@ impl Program {
         let link_status = link_status != (gl::FALSE as i32);
         if !link_status {
             println!("Program info log:\n{}", self.get_info_log());
-            fail!("Compiling failed");
+            panic!("Linking program failed");
         }
         link_status
     }
@@ -102,7 +106,9 @@ impl Program {
 impl Drop for Program {
     fn drop(&mut self) {
         if self.registration.context_alive() {
-            gl::DeleteProgram(self.id);
+            unsafe {
+                gl::DeleteProgram(self.id);
+            }
             check_error!();
         }
     }
@@ -110,7 +116,9 @@ impl Drop for Program {
 
 impl Bind for Program {
     fn bind(&self) {
-        gl::UseProgram(self.id);
+        unsafe {
+            gl::UseProgram(self.id);
+        }
     }
 
     fn get_id(&self) -> TrackerId {
