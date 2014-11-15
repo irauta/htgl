@@ -6,7 +6,7 @@ extern crate gl;
 
 pub use gl::load_with;
 pub use renderer::Renderer;
-pub use program::ProgramEditor;
+pub use program::{ProgramEditor,ProgramInfoAccessor};
 pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
 pub use buffer::uniformbuffer::UniformBufferEditor;

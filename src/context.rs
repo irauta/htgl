@@ -5,7 +5,7 @@ use std::rc::Rc;
 use super::{ShaderType,AttributeType};
 use super::{VertexBufferHandle,IndexBufferHandle,UniformBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
 use super::handle::{new_handle,HandleAccess};
-use super::program::{mod,Program,ProgramEditor};
+use super::program::{mod,Program,ProgramEditor,ProgramInfoAccessor};
 use super::shader::Shader;
 use super::buffer;
 use super::buffer::vertexbuffer::{VertexBuffer,VertexBufferEditor};
@@ -107,6 +107,10 @@ impl Context {
 
     pub fn edit_program<'a>(&'a mut self, program: &'a ProgramHandle) -> ProgramEditor {
         program::new_program_editor(self, program.access())
+    }
+
+    pub fn program_info<'a>(&'a self, program: &'a ProgramHandle) -> ProgramInfoAccessor {
+        program::new_program_info_accessor(program.access())
     }
 
     // Commands that do not (directly) consume resources

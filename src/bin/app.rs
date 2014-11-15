@@ -7,7 +7,15 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,AttributeUnsignedByte,ClearColor,DepthTest,CullingEnabled,VertexShader,FragmentShader,Triangles,SimpleUniform1f};
+use mog::{AttributeFloat,
+    AttributeUnsignedByte,
+    ClearColor,
+    DepthTest,
+    CullingEnabled,
+    VertexShader,
+    FragmentShader,
+    Triangles,
+    SimpleUniform1f};
 
 #[allow(dead_code)]
 #[repr(packed)]
@@ -120,9 +128,10 @@ fn main() {
 
     {
         let program_editor = ctx.edit_program(&program);
-        let scale_location = program_editor.get_uniform_location("scale");
+        let program_info = program_editor.program_info();
+        let scale_location = program_info.get_uniform_location("scale");
         program_editor.uniform_f32(scale_location, 1, SimpleUniform1f, &[1.5]);
-        let uniform_info = program_editor.get_uniform_info();
+        let uniform_info = program_info.get_uniform_info();
         for uniform in uniform_info.globals.iter() {
             println!("{}", uniform);
         }

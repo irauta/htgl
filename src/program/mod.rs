@@ -53,6 +53,24 @@ impl Program {
         }
     }
 
+    pub fn get_frag_data_location(&self, name: &str) -> i32 {
+        let c_name = name.to_c_str();
+        unsafe {
+            let location = gl::GetFragDataLocation(self.id, c_name.as_ptr());
+            check_error!();
+            location
+        }
+    }
+
+    pub fn get_frag_data_index(&self, name: &str) -> i32 {
+        let c_name = name.to_c_str();
+        unsafe {
+            let location = gl::GetFragDataIndex(self.id, c_name.as_ptr());
+            check_error!();
+            location
+        }
+    }
+
     fn link(&self) {
         for ref shader in self.shaders.iter() {
             unsafe {
@@ -126,13 +144,11 @@ impl Bind for Program {
     }
 }
 
-pub struct ProgramEditor<'a> {
-    #[allow(dead_code)]
-    context: &'a mut Context,
+pub struct ProgramInfoAccessor<'a> {
     program: &'a Program
 }
 
-impl<'a> ProgramEditor<'a> {
+impl<'a> ProgramInfoAccessor<'a> {
     pub fn get_attribute_location(&self, name: &str) -> i32 {
         self.program.get_attribute_location(name)
     }
@@ -145,6 +161,27 @@ impl<'a> ProgramEditor<'a> {
         uniform::make_uniform_info(self.program)
     }
 
+    pub fn get_frag_data_location(&self, name: &str) -> i32 {
+        self.program.get_frag_data_location(name)
+    }
+
+    pub fn get_frag_data_index(&self, name: &str) -> i32 {
+        self.program.get_frag_data_index(name)
+    }
+}
+
+pub fn new_program_info_accessor(program: &Program) -> ProgramInfoAccessor {
+    ProgramInfoAccessor { program: program }
+}
+
+pub struct ProgramEditor<'a> {
+    #[allow(dead_code)]
+    context: &'a mut Context,
+    #[allow(dead_code)]
+    program: &'a Program
+}
+
+impl<'a> ProgramEditor<'a> {
     pub fn uniform_f32(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
         uniform::uniform_f32(location, count, uniform_type, values)
     }
@@ -159,6 +196,10 @@ impl<'a> ProgramEditor<'a> {
 
     pub fn uniform_i32(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
         uniform::uniform_i32(location, count, uniform_type, values)
+    }
+
+    pub fn program_info(&self) -> ProgramInfoAccessor {
+        new_program_info_accessor(self.program)
     }
 }
 
