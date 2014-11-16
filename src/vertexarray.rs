@@ -11,13 +11,13 @@ use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
-use super::AttributeType;
+use super::VertexAttributeType;
 
 #[deriving(Clone)]
 pub struct VertexAttribute {
     pub index: u32,
     pub size: u8,
-    pub attribute_type: AttributeType,
+    pub attribute_type: VertexAttributeType,
     pub normalized: bool,
     pub stride: u32,
     pub offset: u32,
@@ -63,7 +63,7 @@ impl VertexArray {
 
     pub fn new_single_vbo(ctx: &mut Context,
                           tracker_id: TrackerId,
-                          attributes: &[(u8, AttributeType, bool)],
+                          attributes: &[(u8, VertexAttributeType, bool)],
                           vertex_buffer: VertexBufferHandle,
                           index_buffer: Option<IndexBufferHandle>,
                           registration: RegistrationHandle) -> VertexArray {
@@ -145,34 +145,34 @@ impl Bind for VertexArray {
     }
 }
 
-fn attribute_to_gl_type(attribute_type: AttributeType) -> GLenum {
+fn attribute_to_gl_type(attribute_type: VertexAttributeType) -> GLenum {
     match attribute_type {
-        super::AttributeByte => gl::BYTE,
-        super::AttributeUnsignedByte => gl::UNSIGNED_BYTE,
-        super::AttributeShort => gl::SHORT,
-        super::AttributeUnsignedShort => gl::UNSIGNED_SHORT,
-        super::AttributeInt => gl::INT,
-        super::AttributeUnsignedInt => gl::UNSIGNED_INT,
-        super::AttributeHalfFloat => gl::HALF_FLOAT,
-        super::AttributeFloat => gl::FLOAT,
-        super::AttributeDouble => gl::DOUBLE,
-        super::AttributeInt2101010Rev => gl::INT_2_10_10_10_REV,
-        super::AttributeUnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
+        super::VertexAttributeByte => gl::BYTE,
+        super::VertexAttributeUnsignedByte => gl::UNSIGNED_BYTE,
+        super::VertexAttributeShort => gl::SHORT,
+        super::VertexAttributeUnsignedShort => gl::UNSIGNED_SHORT,
+        super::VertexAttributeInt => gl::INT,
+        super::VertexAttributeUnsignedInt => gl::UNSIGNED_INT,
+        super::VertexAttributeHalfFloat => gl::HALF_FLOAT,
+        super::VertexAttributeFloat => gl::FLOAT,
+        super::VertexAttributeDouble => gl::DOUBLE,
+        super::VertexAttributeInt2101010Rev => gl::INT_2_10_10_10_REV,
+        super::VertexAttributeUnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
     }
 }
 
-fn attribute_to_size(attribute_type: AttributeType) -> GLenum {
+fn attribute_to_size(attribute_type: VertexAttributeType) -> GLenum {
     match attribute_type {
-        super::AttributeByte => 1,
-        super::AttributeUnsignedByte => 1,
-        super::AttributeShort => 2,
-        super::AttributeUnsignedShort => 2,
-        super::AttributeInt => 4,
-        super::AttributeUnsignedInt => 4,
-        super::AttributeHalfFloat => 2,
-        super::AttributeFloat => 4,
-        super::AttributeDouble => 8,
-        super::AttributeInt2101010Rev => 4,
-        super::AttributeUnsignedInt2101010Rev => 4
+        super::VertexAttributeByte => 1,
+        super::VertexAttributeUnsignedByte => 1,
+        super::VertexAttributeShort => 2,
+        super::VertexAttributeUnsignedShort => 2,
+        super::VertexAttributeInt => 4,
+        super::VertexAttributeUnsignedInt => 4,
+        super::VertexAttributeHalfFloat => 2,
+        super::VertexAttributeFloat => 4,
+        super::VertexAttributeDouble => 8,
+        super::VertexAttributeInt2101010Rev => 4,
+        super::VertexAttributeUnsignedInt2101010Rev => 4
     }
 }

@@ -7,8 +7,8 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{AttributeFloat,
-    AttributeUnsignedByte,
+use mog::{VertexAttributeFloat,
+    VertexAttributeUnsignedByte,
     ClearColor,
     DepthTest,
     CullingEnabled,
@@ -55,24 +55,10 @@ layout(location = 1) in vec4 color;
 
 uniform float scale;
 
-uniform FooBlock {
-    float huh;
-    float hah;
-    float heh;
-    float hmh;
-} barBlock;
-
-uniform FooBlock2 {
-    float huh;
-    float hah;
-    float heh;
-    float hmh;
-} barBlock2;
-
 out vec4 v_color;
 
 void main() {
-    gl_Position.xyz = position * scale * barBlock.huh * barBlock2.huh;
+    gl_Position.xyz = position * scale;
     gl_Position.w = 1.0;
     v_color = color;
 }
@@ -117,14 +103,23 @@ fn main() {
         ];
     ctx.edit_vertex_buffer(&vbo).data(&vertices);
     let ibo = ctx.new_index_buffer();
-    let vao = ctx.new_vertex_array_simple([(3, AttributeFloat, false), (4, AttributeUnsignedByte, true)], vbo, Some(ibo));
+    let vao = ctx.new_vertex_array_simple([(3, VertexAttributeFloat, false), (4, VertexAttributeUnsignedByte, true)], vbo, Some(ibo));
     if let Some(mut editor) = ctx.edit_index_buffer(&vao) {
         let indices = [0, 1, 2];
         editor.data_u16(&indices);
     }
     let vs = ctx.new_shader(VertexShader, VS_SOURCE);
+    if !ctx.shader_info(&vs).get_compile_status() {
+        panic!(ctx.shader_info(&vs).get_info_log())
+    }
     let fs = ctx.new_shader(FragmentShader, FS_SOURCE);
+    if !ctx.shader_info(&fs).get_compile_status() {
+        panic!(ctx.shader_info(&fs).get_info_log())
+    }
     let program = ctx.new_program(&[vs, fs]);
+    if !ctx.program_info(&program).get_link_status() {
+        panic!(ctx.program_info(&program).get_info_log())
+    }
 
     {
         let program_editor = ctx.edit_program(&program);
@@ -140,6 +135,9 @@ fn main() {
             for uniform in block.uniforms.iter() {
                 println!("    {}", uniform);
             }
+        }
+        for attribute in program_info.get_attribute_info().attributes.iter() {
+            println!("{}", attribute)
         }
     }
 

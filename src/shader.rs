@@ -48,7 +48,6 @@ impl Shader {
 
             gl::CompileShader(self.id);
             check_error!();
-            self.get_compile_status();
         }
     }
 
@@ -58,12 +57,7 @@ impl Shader {
             gl::GetShaderiv(self.id, gl::COMPILE_STATUS, &mut compile_status);
             check_error!();
         }
-        let compile_status = compile_status != (gl::FALSE as i32);
-        if !compile_status {
-            println!("Shader info log:\n{}", self.get_info_log());
-            panic!("Compiling shader failed");
-        }
-        compile_status
+        compile_status == (gl::TRUE as i32)
     }
 
     fn get_info_length(&self) -> GLsizei {
@@ -86,6 +80,24 @@ impl Drop for Shader {
             check_error!();
         }
     }
+}
+
+pub struct ShaderInfoAccessor<'a> {
+    shader: &'a Shader
+}
+
+impl<'a> ShaderInfoAccessor<'a> {
+    pub fn get_info_log(&self) -> String {
+        self.shader.get_info_log()
+    }
+
+    pub fn get_compile_status(&self) -> bool {
+        self.shader.get_compile_status()
+    }
+}
+
+pub fn new_shader_info_accessor(shader: &Shader) -> ShaderInfoAccessor {
+    ShaderInfoAccessor { shader: shader }
 }
 
 fn shader_type_to_enum(shader_type: ShaderType) -> GLenum {

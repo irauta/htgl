@@ -20,13 +20,17 @@ pub fn check_error(file: &str, line: uint) {
     }
 }
 
-/// Always shorten the vector to exclude the null byte!
+/// Always remember to shorten the vector to exclude the null byte before passing the Vec to this fn!
 pub fn vec_to_string(vec: Vec<u8>) -> String {
     match String::from_utf8(vec) {
         Ok(string) => string,
-        Err(vec) => match String::from_utf8_lossy(vec[]) {
-            Owned(string) => string,
-            Slice(str_slice) => String::from_str(str_slice) // This one shouldn't probably happen
-        }
+        Err(vec) => slice_to_string(vec[])
+    }
+}
+
+pub fn slice_to_string(slice: &[u8]) -> String {
+    match String::from_utf8_lossy(slice) {
+        Owned(string) => string,
+        Slice(str_slice) => String::from_str(str_slice)
     }
 }

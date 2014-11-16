@@ -7,6 +7,7 @@ extern crate gl;
 pub use gl::load_with;
 pub use renderer::Renderer;
 pub use program::{ProgramEditor,ProgramInfoAccessor};
+pub use shader::ShaderInfoAccessor;
 pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
 pub use buffer::uniformbuffer::UniformBufferEditor;
@@ -52,18 +53,18 @@ pub enum RenderOption {
 }
 
 #[deriving(Clone,Show)]
-pub enum AttributeType {
-    AttributeByte,
-    AttributeUnsignedByte,
-    AttributeShort,
-    AttributeUnsignedShort,
-    AttributeInt,
-    AttributeUnsignedInt,
-    AttributeHalfFloat,
-    AttributeFloat,
-    AttributeDouble,
-    AttributeInt2101010Rev,
-    AttributeUnsignedInt2101010Rev
+pub enum VertexAttributeType {
+    VertexAttributeByte,
+    VertexAttributeUnsignedByte,
+    VertexAttributeShort,
+    VertexAttributeUnsignedShort,
+    VertexAttributeInt,
+    VertexAttributeUnsignedInt,
+    VertexAttributeHalfFloat,
+    VertexAttributeFloat,
+    VertexAttributeDouble,
+    VertexAttributeInt2101010Rev,
+    VertexAttributeUnsignedInt2101010Rev
 }
 
 pub enum ShaderType {
@@ -171,4 +172,29 @@ pub enum UniformType {
     UniformUnsignedIntSampler2dMultisampleArray,
     UniformUnsignedIntSamplerBuffer,
     UniformUnsignedIntSampler2dRect
+}
+
+#[deriving(Show)]
+pub enum ShaderAttributeType {
+    ShaderAttributeFloat,
+    ShaderAttributeFloatVec2,
+    ShaderAttributeFloatVec3,
+    ShaderAttributeFloatVec4,
+    ShaderAttributeFloatMat2,
+    ShaderAttributeFloatMat3,
+    ShaderAttributeFloatMat4,
+    ShaderAttributeFloatMat2x3,
+    ShaderAttributeFloatMat2x4,
+    ShaderAttributeFloatMat3x2,
+    ShaderAttributeFloatMat3x4,
+    ShaderAttributeFloatMat4x2,
+    ShaderAttributeFloatMat4x3,
+    ShaderAttributeInt,
+    ShaderAttributeIntVec2,
+    ShaderAttributeIntVec3,
+    ShaderAttributeIntVec4,
+    ShaderAttributeUnsignedInt,
+    ShaderAttributeUnsignedIntVec2,
+    ShaderAttributeUnsignedIntVec3,
+    ShaderAttributeUnsignedIntVec4
 }

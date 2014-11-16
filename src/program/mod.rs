@@ -11,8 +11,10 @@ use super::tracker::TrackerId;
 use super::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeUint};
 
 use self::uniform::UniformInfo;
+use self::attribute::ShaderAttributeInfo;
 
 mod uniform;
+mod attribute;
 
 pub struct Program {
     id: u32,
@@ -82,7 +84,6 @@ impl Program {
             gl::LinkProgram(self.id);
         }
         check_error!();
-        self.get_link_status();
     }
 
     fn get_info_log(&self) -> String {
@@ -101,12 +102,7 @@ impl Program {
 
     fn get_link_status(&self) -> bool {
         let link_status = self.get_value(gl::LINK_STATUS);
-        let link_status = link_status != (gl::FALSE as i32);
-        if !link_status {
-            println!("Program info log:\n{}", self.get_info_log());
-            panic!("Linking program failed");
-        }
-        link_status
+        link_status == (gl::TRUE as i32)
     }
 
     fn get_value(&self, property: GLenum) -> i32 {
@@ -161,12 +157,24 @@ impl<'a> ProgramInfoAccessor<'a> {
         uniform::make_uniform_info(self.program)
     }
 
+    pub fn get_attribute_info(&self) -> ShaderAttributeInfo {
+        attribute::make_attribute_info_vec(self.program)
+    }
+
     pub fn get_frag_data_location(&self, name: &str) -> i32 {
         self.program.get_frag_data_location(name)
     }
 
     pub fn get_frag_data_index(&self, name: &str) -> i32 {
         self.program.get_frag_data_index(name)
+    }
+
+    pub fn get_link_status(&self) -> bool {
+        self.program.get_link_status()
+    }
+
+    pub fn get_info_log(&self) -> String {
+        self.program.get_info_log()
     }
 }
 

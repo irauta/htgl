@@ -2,11 +2,11 @@
 use core::cell::RefCell;
 use std::rc::Rc;
 
-use super::{ShaderType,AttributeType};
+use super::{ShaderType,VertexAttributeType};
 use super::{VertexBufferHandle,IndexBufferHandle,UniformBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
 use super::handle::{new_handle,HandleAccess};
 use super::program::{mod,Program,ProgramEditor,ProgramInfoAccessor};
-use super::shader::Shader;
+use super::shader::{mod,Shader,ShaderInfoAccessor};
 use super::buffer;
 use super::buffer::vertexbuffer::{VertexBuffer,VertexBufferEditor};
 use super::buffer::uniformbuffer::{UniformBuffer,UniformBufferEditor};
@@ -68,7 +68,7 @@ impl Context {
     }
 
     pub fn new_vertex_array_simple(&mut self,
-                                   attributes: &[(u8, AttributeType, bool)],
+                                   attributes: &[(u8, VertexAttributeType, bool)],
                                    vertex_buffer: VertexBufferHandle,
                                    index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
@@ -111,6 +111,10 @@ impl Context {
 
     pub fn program_info<'a>(&'a self, program: &'a ProgramHandle) -> ProgramInfoAccessor {
         program::new_program_info_accessor(program.access())
+    }
+
+    pub fn shader_info<'a>(&'a self, shader: &'a ShaderHandle) -> ShaderInfoAccessor {
+        shader::new_shader_info_accessor(shader.access())
     }
 
     // Commands that do not (directly) consume resources
