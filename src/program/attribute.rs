@@ -34,6 +34,7 @@ pub struct ShaderAttributeInfo {
 #[deriving(Show)]
 pub struct ShaderAttribute {
     pub name: String,
+    pub location: i32,
     pub attribute_type: Option<ShaderAttributeType>,
     pub size: i32
 }
@@ -43,19 +44,21 @@ pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
     let max_length = program.get_value(gl::ACTIVE_ATTRIBUTE_MAX_LENGTH);
     let mut name_vec = Vec::from_elem(max_length as uint, 0u8);
     ShaderAttributeInfo { attributes: Vec::from_fn(attr_count as uint, |i| {
+        let mut actual_length = 0;
+        let mut size = 0;
+        let mut gl_type = 0;
+        let name_vec_ptr = name_vec.as_mut_ptr() as *mut i8;
         unsafe {
-            let mut actual_length = 0;
-            let mut size = 0;
-            let mut gl_type = 0;
-            let name_vec_ptr = name_vec.as_mut_ptr() as *mut i8;
             gl::GetActiveAttrib(program.id, i as u32, name_vec.len() as i32, &mut actual_length, &mut size, &mut gl_type, name_vec_ptr);
-            let name = slice_to_string(name_vec.slice_to_or_fail(&(actual_length as uint)));
-            let attribute_type = attribute_type_from_u32(gl_type);
-            ShaderAttribute {
-                name: name,
-                attribute_type: attribute_type,
-                size: size
-            }
+        }
+        let name = slice_to_string(name_vec.slice_to_or_fail(&(actual_length as uint)));
+        let attribute_type = attribute_type_from_u32(gl_type);
+        let location = program.get_attribute_location(name[]);
+        ShaderAttribute {
+            name: name,
+            location: location,
+            attribute_type: attribute_type,
+            size: size
         }
     })}
 }
