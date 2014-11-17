@@ -130,6 +130,33 @@ pub struct UniformInfo {
     pub blocks: Vec<InterfaceBlock>
 }
 
+impl UniformInfo {
+    pub fn get_global_uniform(&self, name: &str) -> Option<&Uniform> {
+        for uniform in self.globals.iter() {
+            if uniform.name[] == name {
+                return Some(uniform);
+            }
+        }
+        None
+    }
+
+    pub fn get_block(&self, name: &str) -> Option<&InterfaceBlock> {
+        for block in self.blocks.iter() {
+            if block.name[] == name {
+                return Some(block);
+            }
+        }
+        None
+    }
+
+    pub fn get_block_uniform(&self, block_name: &str, uniform_name: &str) -> Option<&BlockUniform> {
+        if let Some(block) = self.get_block(block_name) {
+            return block.get_uniform(uniform_name);
+        }
+        None
+    }
+}
+
 /// An uniform not in a block
 #[deriving(Show)]
 pub struct Uniform {
@@ -157,6 +184,17 @@ pub struct InterfaceBlock {
     pub index: u32,
     pub data_size: i32,
     pub uniforms: Vec<BlockUniform>
+}
+
+impl InterfaceBlock {
+    pub fn get_uniform(&self, name: &str) -> Option<&BlockUniform> {
+        for uniform in self.uniforms.iter() {
+            if uniform.name[] == name {
+                return Some(uniform);
+            }
+        }
+        None
+    }
 }
 
 #[deriving(Show)]

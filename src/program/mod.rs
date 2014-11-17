@@ -10,8 +10,8 @@ use super::ShaderHandle;
 use super::tracker::TrackerId;
 use super::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeUint};
 
-use self::uniform::UniformInfo;
-use self::attribute::ShaderAttributeInfo;
+pub use self::uniform::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
+pub use self::attribute::{ShaderAttributeInfo,ShaderAttribute};
 
 mod uniform;
 mod attribute;

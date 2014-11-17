@@ -31,6 +31,17 @@ pub struct ShaderAttributeInfo {
     pub attributes: Vec<ShaderAttribute>
 }
 
+impl ShaderAttributeInfo {
+    pub fn get_attribute(&self, name: &str) -> Option<&ShaderAttribute> {
+        for attribute in self.attributes.iter() {
+            if attribute.name[] == name {
+                return Some(attribute);
+            }
+        }
+        None
+    }
+}
+
 #[deriving(Show)]
 pub struct ShaderAttribute {
     pub name: String,
