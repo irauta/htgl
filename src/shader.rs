@@ -4,7 +4,11 @@ use gl::types::{GLenum,GLint,GLsizei};
 
 use super::util::vec_to_string;
 use super::context::RegistrationHandle;
-use super::ShaderType;
+
+pub enum ShaderType {
+    VertexShader,
+    FragmentShader
+}
 
 pub struct Shader {
     id: u32,
@@ -102,7 +106,7 @@ pub fn new_shader_info_accessor(shader: &Shader) -> ShaderInfoAccessor {
 
 fn shader_type_to_enum(shader_type: ShaderType) -> GLenum {
     match shader_type {
-        super::VertexShader => gl::VERTEX_SHADER,
-        super::FragmentShader => gl::FRAGMENT_SHADER
+        ShaderType::VertexShader => gl::VERTEX_SHADER,
+        ShaderType::FragmentShader => gl::FRAGMENT_SHADER
     }
 }

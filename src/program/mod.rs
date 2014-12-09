@@ -8,8 +8,8 @@ use super::handle::HandleAccess;
 use super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::ShaderHandle;
 use super::tracker::TrackerId;
-use super::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeUint};
 
+pub use self::uniform::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeUint};
 pub use self::uniform::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
 pub use self::attribute::{ShaderAttributeInfo,ShaderAttribute};
 

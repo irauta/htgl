@@ -1,5 +1,5 @@
 
-#![feature(slicing_syntax,if_let)]
+#![feature(slicing_syntax)]
 
 extern crate glfw;
 
@@ -7,15 +7,11 @@ extern crate mog;
 
 use glfw::Context;
 
-use mog::{VertexAttributeFloat,
-    VertexAttributeUnsignedByte,
-    ClearColor,
-    DepthTest,
-    CullingEnabled,
-    VertexShader,
-    FragmentShader,
-    Triangles,
-    SimpleUniform1f};
+use mog::{VertexAttributeType,
+    RenderOption,
+    ShaderType,
+    PrimitiveMode,
+    SimpleUniformTypeFloat};
 
 #[allow(dead_code)]
 #[repr(packed)]
@@ -78,11 +74,11 @@ void main() {
 fn main() {
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
-    glfw.window_hint(glfw::ContextVersion(3, 3));
-    glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
+    glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
+    glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
 
     // Create a windowed mode window and its OpenGL context
-    let (window, events) = glfw.create_window(300, 300, "Hello this is window", glfw::Windowed)
+    let (window, events) = glfw.create_window(300, 300, "Hello this is window", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
     window.set_key_polling(true);
@@ -92,9 +88,9 @@ fn main() {
 
     let mut ctx = mog::Context::new();
     println!("{}", ctx.get_info());
-    ctx.renderer().set_option(ClearColor(1f32, 1f32, 1f32, 1f32));
-    ctx.renderer().set_option(DepthTest(false));
-    ctx.renderer().set_option(CullingEnabled(true));
+    ctx.renderer().set_option(RenderOption::ClearColor(1f32, 1f32, 1f32, 1f32));
+    ctx.renderer().set_option(RenderOption::DepthTest(false));
+    ctx.renderer().set_option(RenderOption::CullingEnabled(true));
     let vbo = ctx.new_vertex_buffer();
     let vertices = [
         Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
@@ -103,16 +99,16 @@ fn main() {
         ];
     ctx.edit_vertex_buffer(&vbo).data(&vertices);
     let ibo = ctx.new_index_buffer();
-    let vao = ctx.new_vertex_array_simple([(3, VertexAttributeFloat, false), (4, VertexAttributeUnsignedByte, true)], vbo, Some(ibo));
+    let vao = ctx.new_vertex_array_simple(&[(3, VertexAttributeType::Float, false), (4, VertexAttributeType::UnsignedByte, true)], vbo, Some(ibo));
     if let Some(mut editor) = ctx.edit_index_buffer(&vao) {
         let indices = [0, 1, 2];
         editor.data_u16(&indices);
     }
-    let vs = ctx.new_shader(VertexShader, VS_SOURCE);
+    let vs = ctx.new_shader(ShaderType::VertexShader, VS_SOURCE);
     if !ctx.shader_info(&vs).get_compile_status() {
         panic!(ctx.shader_info(&vs).get_info_log())
     }
-    let fs = ctx.new_shader(FragmentShader, FS_SOURCE);
+    let fs = ctx.new_shader(ShaderType::FragmentShader, FS_SOURCE);
     if !ctx.shader_info(&fs).get_compile_status() {
         panic!(ctx.shader_info(&fs).get_info_log())
     }
@@ -126,7 +122,7 @@ fn main() {
         let program_info = program_editor.program_info();
         let uniform_info = program_info.get_uniform_info();
         let scale_location = uniform_info.get_global_uniform("scale").map(|u| u.location).unwrap_or(-1);
-        program_editor.uniform_f32(scale_location, 1, SimpleUniform1f, &[1.5]);
+        program_editor.uniform_f32(scale_location, 1, SimpleUniformTypeFloat::Uniform1f, &[1.5]);
         for uniform in uniform_info.globals.iter() {
             println!("{}", uniform);
         }
@@ -151,7 +147,7 @@ fn main() {
         renderer.clear();
         renderer.use_vertex_array(&vao);
         renderer.use_program(&program);
-        renderer.draw_elements_u16(Triangles, 3, 0);
+        renderer.draw_elements_u16(PrimitiveMode::Triangles, 3, 0);
 
         window.swap_buffers();
         // break;
@@ -160,7 +156,7 @@ fn main() {
 
 fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
     match event {
-        glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => {
+        glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
             window.set_should_close(true)
         }
         _ => {}

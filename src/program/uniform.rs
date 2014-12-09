@@ -6,97 +6,108 @@ use gl;
 use gl::types::GLenum;
 
 use super::Program;
-use super::super::{SimpleUniformTypeFloat,
-    SimpleUniform1f,
-    SimpleUniform2f,
-    SimpleUniform3f,
-    SimpleUniform4f,
 
-    SimpleUniformTypeMatrix,
-    SimpleUniformMatrix2f,
-    SimpleUniformMatrix3f,
-    SimpleUniformMatrix4f,
-    SimpleUniformMatrix2x3f,
-    SimpleUniformMatrix3x2f,
-    SimpleUniformMatrix2x4f,
-    SimpleUniformMatrix4x2f,
-    SimpleUniformMatrix3x4f,
-    SimpleUniformMatrix4x3f,
+#[deriving(Show)]
+pub enum SimpleUniformTypeFloat {
+    Uniform1f,
+    Uniform2f,
+    Uniform3f,
+    Uniform4f
+}
 
-    SimpleUniformTypeInt,
-    SimpleUniform1i,
-    SimpleUniform2i,
-    SimpleUniform3i,
-    SimpleUniform4i,
+#[deriving(Show)]
+pub enum SimpleUniformTypeMatrix {
+    Matrix2f,
+    Matrix3f,
+    Matrix4f,
+    Matrix2x3f,
+    Matrix3x2f,
+    Matrix2x4f,
+    Matrix4x2f,
+    Matrix3x4f,
+    Matrix4x3f
+}
 
-    SimpleUniformTypeUint,
-    SimpleUniform1u,
-    SimpleUniform2u,
-    SimpleUniform3u,
-    SimpleUniform4u,
+#[deriving(Show)]
+pub enum SimpleUniformTypeInt {
+    Uniform1i,
+    Uniform2i,
+    Uniform3i,
+    Uniform4i
+}
 
-    UniformType,
-    UniformFloat,
-    UniformFloatVec2,
-    UniformFloatVec3,
-    UniformFloatVec4,
-    UniformInt,
-    UniformIntVec2,
-    UniformIntVec3,
-    UniformIntVec4,
-    UniformUnsignedInt,
-    UniformUnsignedIntVec2,
-    UniformUnsignedIntVec3,
-    UniformUnsignedIntVec4,
-    UniformBool,
-    UniformBoolVec2,
-    UniformBoolVec3,
-    UniformBoolVec4,
-    UniformFloatMat2,
-    UniformFloatMat3,
-    UniformFloatMat4,
-    UniformFloatMat2x3,
-    UniformFloatMat2x4,
-    UniformFloatMat3x2,
-    UniformFloatMat3x4,
-    UniformFloatMat4x2,
-    UniformFloatMat4x3,
-    UniformSampler1d,
-    UniformSampler2d,
-    UniformSampler3d,
-    UniformSamplerCube,
-    UniformSampler1dShadow,
-    UniformSampler2dShadow,
-    UniformSampler1dArray,
-    UniformSampler2dArray,
-    UniformSampler1dArrayShadow,
-    UniformSampler2dArrayShadow,
-    UniformSampler2dMultisample,
-    UniformSampler2dMultisampleArray,
-    UniformSamplerCubeShadow,
-    UniformSamplerBuffer,
-    UniformSampler2dRect,
-    UniformSampler2dRectShadow,
-    UniformIntSampler1d,
-    UniformIntSampler2d,
-    UniformIntSampler3d,
-    UniformIntSamplerCube,
-    UniformIntSampler1dArray,
-    UniformIntSampler2dArray,
-    UniformIntSampler2dMultisample,
-    UniformIntSampler2dMultisampleArray,
-    UniformIntSamplerBuffer,
-    UniformIntSampler2dRect,
-    UniformUnsignedIntSampler1d,
-    UniformUnsignedIntSampler2d,
-    UniformUnsignedIntSampler3d,
-    UniformUnsignedIntSamplerCube,
-    UniformUnsignedIntSampler1dArray,
-    UniformUnsignedIntSampler2dArray,
-    UniformUnsignedIntSampler2dMultisample,
-    UniformUnsignedIntSampler2dMultisampleArray,
-    UniformUnsignedIntSamplerBuffer,
-    UniformUnsignedIntSampler2dRect};
+#[deriving(Show)]
+pub enum SimpleUniformTypeUint {
+    Uniform1u,
+    Uniform2u,
+    Uniform3u,
+    Uniform4u
+}
+
+#[deriving(Show)]
+pub enum UniformType {
+    Float,
+    FloatVec2,
+    FloatVec3,
+    FloatVec4,
+    Int,
+    IntVec2,
+    IntVec3,
+    IntVec4,
+    UnsignedInt,
+    UnsignedIntVec2,
+    UnsignedIntVec3,
+    UnsignedIntVec4,
+    Bool,
+    BoolVec2,
+    BoolVec3,
+    BoolVec4,
+    FloatMat2,
+    FloatMat3,
+    FloatMat4,
+    FloatMat2x3,
+    FloatMat2x4,
+    FloatMat3x2,
+    FloatMat3x4,
+    FloatMat4x2,
+    FloatMat4x3,
+    Sampler1d,
+    Sampler2d,
+    Sampler3d,
+    SamplerCube,
+    Sampler1dShadow,
+    Sampler2dShadow,
+    Sampler1dArray,
+    Sampler2dArray,
+    Sampler1dArrayShadow,
+    Sampler2dArrayShadow,
+    Sampler2dMultisample,
+    Sampler2dMultisampleArray,
+    SamplerCubeShadow,
+    SamplerBuffer,
+    Sampler2dRect,
+    Sampler2dRectShadow,
+    IntSampler1d,
+    IntSampler2d,
+    IntSampler3d,
+    IntSamplerCube,
+    IntSampler1dArray,
+    IntSampler2dArray,
+    IntSampler2dMultisample,
+    IntSampler2dMultisampleArray,
+    IntSamplerBuffer,
+    IntSampler2dRect,
+    UnsignedIntSampler1d,
+    UnsignedIntSampler2d,
+    UnsignedIntSampler3d,
+    UnsignedIntSamplerCube,
+    UnsignedIntSampler1dArray,
+    UnsignedIntSampler2dArray,
+    UnsignedIntSampler2dMultisample,
+    UnsignedIntSampler2dMultisampleArray,
+    UnsignedIntSamplerBuffer,
+    UnsignedIntSampler2dRect
+}
 
 /// Helper struct containing all
 struct GlUniform {
@@ -343,10 +354,10 @@ pub fn uniform_f32(location: i32, count: uint, uniform_type: SimpleUniformTypeFl
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniform1f => gl::Uniform1fv(location, count, value_ptr),
-            SimpleUniform2f => gl::Uniform2fv(location, count, value_ptr),
-            SimpleUniform3f => gl::Uniform3fv(location, count, value_ptr),
-            SimpleUniform4f => gl::Uniform4fv(location, count, value_ptr)
+            SimpleUniformTypeFloat::Uniform1f => gl::Uniform1fv(location, count, value_ptr),
+            SimpleUniformTypeFloat::Uniform2f => gl::Uniform2fv(location, count, value_ptr),
+            SimpleUniformTypeFloat::Uniform3f => gl::Uniform3fv(location, count, value_ptr),
+            SimpleUniformTypeFloat::Uniform4f => gl::Uniform4fv(location, count, value_ptr)
         }
     }
 }
@@ -358,15 +369,15 @@ pub fn uniform_matrix(location: i32, count: uint, uniform_type: SimpleUniformTyp
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniformMatrix2f => gl::UniformMatrix2fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix3f => gl::UniformMatrix3fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix4f => gl::UniformMatrix4fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix2x3f => gl::UniformMatrix2x3fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix3x2f => gl::UniformMatrix3x2fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix2x4f => gl::UniformMatrix2x4fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix4x2f => gl::UniformMatrix4x2fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix3x4f => gl::UniformMatrix3x4fv(location, count, transpose, value_ptr),
-            SimpleUniformMatrix4x3f => gl::UniformMatrix4x3fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix2f => gl::UniformMatrix2fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix3f => gl::UniformMatrix3fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix4f => gl::UniformMatrix4fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix2x3f => gl::UniformMatrix2x3fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix3x2f => gl::UniformMatrix3x2fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix2x4f => gl::UniformMatrix2x4fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix4x2f => gl::UniformMatrix4x2fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix3x4f => gl::UniformMatrix3x4fv(location, count, transpose, value_ptr),
+            SimpleUniformTypeMatrix::Matrix4x3f => gl::UniformMatrix4x3fv(location, count, transpose, value_ptr),
         }
     }
 }
@@ -377,10 +388,10 @@ pub fn uniform_u32(location: i32, count: uint, uniform_type: SimpleUniformTypeUi
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniform1u => gl::Uniform1uiv(location, count, value_ptr),
-            SimpleUniform2u => gl::Uniform2uiv(location, count, value_ptr),
-            SimpleUniform3u => gl::Uniform3uiv(location, count, value_ptr),
-            SimpleUniform4u => gl::Uniform4uiv(location, count, value_ptr),
+            SimpleUniformTypeUint::Uniform1u => gl::Uniform1uiv(location, count, value_ptr),
+            SimpleUniformTypeUint::Uniform2u => gl::Uniform2uiv(location, count, value_ptr),
+            SimpleUniformTypeUint::Uniform3u => gl::Uniform3uiv(location, count, value_ptr),
+            SimpleUniformTypeUint::Uniform4u => gl::Uniform4uiv(location, count, value_ptr),
         }
     }
 }
@@ -391,55 +402,55 @@ pub fn uniform_i32(location: i32, count: uint, uniform_type: SimpleUniformTypeIn
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniform1i => gl::Uniform1iv(location, count, value_ptr),
-            SimpleUniform2i => gl::Uniform2iv(location, count, value_ptr),
-            SimpleUniform3i => gl::Uniform3iv(location, count, value_ptr),
-            SimpleUniform4i => gl::Uniform4iv(location, count, value_ptr),
+            SimpleUniformTypeInt::Uniform1i => gl::Uniform1iv(location, count, value_ptr),
+            SimpleUniformTypeInt::Uniform2i => gl::Uniform2iv(location, count, value_ptr),
+            SimpleUniformTypeInt::Uniform3i => gl::Uniform3iv(location, count, value_ptr),
+            SimpleUniformTypeInt::Uniform4i => gl::Uniform4iv(location, count, value_ptr),
         }
     }
 }
 
 fn validate_uniform_f32(count: uint, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
     let element_count = match uniform_type {
-        SimpleUniform1f => 1,
-        SimpleUniform2f => 2,
-        SimpleUniform3f => 3,
-        SimpleUniform4f => 4
+        SimpleUniformTypeFloat::Uniform1f => 1,
+        SimpleUniformTypeFloat::Uniform2f => 2,
+        SimpleUniformTypeFloat::Uniform3f => 3,
+        SimpleUniformTypeFloat::Uniform4f => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
 
 fn validate_uniform_matrix(count: uint, uniform_type: SimpleUniformTypeMatrix, values: &[f32]) {
     let element_count = match uniform_type {
-        SimpleUniformMatrix2f => 2 * 2,
-        SimpleUniformMatrix3f => 3 * 3,
-        SimpleUniformMatrix4f => 4 * 4,
-        SimpleUniformMatrix2x3f => 2 * 3,
-        SimpleUniformMatrix3x2f => 3 * 2,
-        SimpleUniformMatrix2x4f => 2 * 4,
-        SimpleUniformMatrix4x2f => 4 * 2,
-        SimpleUniformMatrix3x4f => 3 * 4,
-        SimpleUniformMatrix4x3f => 4 * 3
+        SimpleUniformTypeMatrix::Matrix2f => 2 * 2,
+        SimpleUniformTypeMatrix::Matrix3f => 3 * 3,
+        SimpleUniformTypeMatrix::Matrix4f => 4 * 4,
+        SimpleUniformTypeMatrix::Matrix2x3f => 2 * 3,
+        SimpleUniformTypeMatrix::Matrix3x2f => 3 * 2,
+        SimpleUniformTypeMatrix::Matrix2x4f => 2 * 4,
+        SimpleUniformTypeMatrix::Matrix4x2f => 4 * 2,
+        SimpleUniformTypeMatrix::Matrix3x4f => 3 * 4,
+        SimpleUniformTypeMatrix::Matrix4x3f => 4 * 3
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
 
 fn validate_uniform_u32(count: uint, uniform_type: SimpleUniformTypeUint, values: &[u32]) {
     let element_count = match uniform_type {
-        SimpleUniform1u => 1,
-        SimpleUniform2u => 2,
-        SimpleUniform3u => 3,
-        SimpleUniform4u => 4
+        SimpleUniformTypeUint::Uniform1u => 1,
+        SimpleUniformTypeUint::Uniform2u => 2,
+        SimpleUniformTypeUint::Uniform3u => 3,
+        SimpleUniformTypeUint::Uniform4u => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
 
 fn validate_uniform_i32(count: uint, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
     let element_count = match uniform_type {
-        SimpleUniform1i => 1,
-        SimpleUniform2i => 2,
-        SimpleUniform3i => 3,
-        SimpleUniform4i => 4
+        SimpleUniformTypeInt::Uniform1i => 1,
+        SimpleUniformTypeInt::Uniform2i => 2,
+        SimpleUniformTypeInt::Uniform3i => 3,
+        SimpleUniformTypeInt::Uniform4i => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
@@ -454,67 +465,67 @@ fn validate_uniform<T, U: Show>(count: uint, uniform_type: U, element_count: uin
 
 fn uniform_type_from_u32(gl_type: u32) -> Option<UniformType> {
     match gl_type {
-        gl::FLOAT => Some(UniformFloat),
-        gl::FLOAT_VEC2 => Some(UniformFloatVec2),
-        gl::FLOAT_VEC3 => Some(UniformFloatVec3),
-        gl::FLOAT_VEC4 => Some(UniformFloatVec4),
-        gl::INT => Some(UniformInt),
-        gl::INT_VEC2 => Some(UniformIntVec2),
-        gl::INT_VEC3 => Some(UniformIntVec3),
-        gl::INT_VEC4 => Some(UniformIntVec4),
-        gl::UNSIGNED_INT => Some(UniformUnsignedInt),
-        gl::UNSIGNED_INT_VEC2 => Some(UniformUnsignedIntVec2),
-        gl::UNSIGNED_INT_VEC3 => Some(UniformUnsignedIntVec3),
-        gl::UNSIGNED_INT_VEC4 => Some(UniformUnsignedIntVec4),
-        gl::BOOL => Some(UniformBool),
-        gl::BOOL_VEC2 => Some(UniformBoolVec2),
-        gl::BOOL_VEC3 => Some(UniformBoolVec3),
-        gl::BOOL_VEC4 => Some(UniformBoolVec4),
-        gl::FLOAT_MAT2 => Some(UniformFloatMat2),
-        gl::FLOAT_MAT3 => Some(UniformFloatMat3),
-        gl::FLOAT_MAT4 => Some(UniformFloatMat4),
-        gl::FLOAT_MAT2x3 => Some(UniformFloatMat2x3),
-        gl::FLOAT_MAT2x4 => Some(UniformFloatMat2x4),
-        gl::FLOAT_MAT3x2 => Some(UniformFloatMat3x2),
-        gl::FLOAT_MAT3x4 => Some(UniformFloatMat3x4),
-        gl::FLOAT_MAT4x2 => Some(UniformFloatMat4x2),
-        gl::FLOAT_MAT4x3 => Some(UniformFloatMat4x3),
-        gl::SAMPLER_1D => Some(UniformSampler1d),
-        gl::SAMPLER_2D => Some(UniformSampler2d),
-        gl::SAMPLER_3D => Some(UniformSampler3d),
-        gl::SAMPLER_CUBE => Some(UniformSamplerCube),
-        gl::SAMPLER_1D_SHADOW => Some(UniformSampler1dShadow),
-        gl::SAMPLER_2D_SHADOW => Some(UniformSampler2dShadow),
-        gl::SAMPLER_1D_ARRAY => Some(UniformSampler1dArray),
-        gl::SAMPLER_2D_ARRAY => Some(UniformSampler2dArray),
-        gl::SAMPLER_1D_ARRAY_SHADOW => Some(UniformSampler1dArrayShadow),
-        gl::SAMPLER_2D_ARRAY_SHADOW => Some(UniformSampler2dArrayShadow),
-        gl::SAMPLER_2D_MULTISAMPLE => Some(UniformSampler2dMultisample),
-        gl::SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformSampler2dMultisampleArray),
-        gl::SAMPLER_CUBE_SHADOW => Some(UniformSamplerCubeShadow),
-        gl::SAMPLER_BUFFER => Some(UniformSamplerBuffer),
-        gl::SAMPLER_2D_RECT => Some(UniformSampler2dRect),
-        gl::SAMPLER_2D_RECT_SHADOW => Some(UniformSampler2dRectShadow),
-        gl::INT_SAMPLER_1D => Some(UniformIntSampler1d),
-        gl::INT_SAMPLER_2D => Some(UniformIntSampler2d),
-        gl::INT_SAMPLER_3D => Some(UniformIntSampler3d),
-        gl::INT_SAMPLER_CUBE => Some(UniformIntSamplerCube),
-        gl::INT_SAMPLER_1D_ARRAY => Some(UniformIntSampler1dArray),
-        gl::INT_SAMPLER_2D_ARRAY => Some(UniformIntSampler2dArray),
-        gl::INT_SAMPLER_2D_MULTISAMPLE => Some(UniformIntSampler2dMultisample),
-        gl::INT_SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformIntSampler2dMultisampleArray),
-        gl::INT_SAMPLER_BUFFER => Some(UniformIntSamplerBuffer),
-        gl::INT_SAMPLER_2D_RECT => Some(UniformIntSampler2dRect),
-        gl::UNSIGNED_INT_SAMPLER_1D => Some(UniformUnsignedIntSampler1d),
-        gl::UNSIGNED_INT_SAMPLER_2D => Some(UniformUnsignedIntSampler2d),
-        gl::UNSIGNED_INT_SAMPLER_3D => Some(UniformUnsignedIntSampler3d),
-        gl::UNSIGNED_INT_SAMPLER_CUBE => Some(UniformUnsignedIntSamplerCube),
-        gl::UNSIGNED_INT_SAMPLER_1D_ARRAY => Some(UniformUnsignedIntSampler1dArray),
-        gl::UNSIGNED_INT_SAMPLER_2D_ARRAY => Some(UniformUnsignedIntSampler2dArray),
-        gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE => Some(UniformUnsignedIntSampler2dMultisample),
-        gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformUnsignedIntSampler2dMultisampleArray),
-        gl::UNSIGNED_INT_SAMPLER_BUFFER => Some(UniformUnsignedIntSamplerBuffer),
-        gl::UNSIGNED_INT_SAMPLER_2D_RECT => Some(UniformUnsignedIntSampler2dRect),
+        gl::FLOAT => Some(UniformType::Float),
+        gl::FLOAT_VEC2 => Some(UniformType::FloatVec2),
+        gl::FLOAT_VEC3 => Some(UniformType::FloatVec3),
+        gl::FLOAT_VEC4 => Some(UniformType::FloatVec4),
+        gl::INT => Some(UniformType::Int),
+        gl::INT_VEC2 => Some(UniformType::IntVec2),
+        gl::INT_VEC3 => Some(UniformType::IntVec3),
+        gl::INT_VEC4 => Some(UniformType::IntVec4),
+        gl::UNSIGNED_INT => Some(UniformType::UnsignedInt),
+        gl::UNSIGNED_INT_VEC2 => Some(UniformType::UnsignedIntVec2),
+        gl::UNSIGNED_INT_VEC3 => Some(UniformType::UnsignedIntVec3),
+        gl::UNSIGNED_INT_VEC4 => Some(UniformType::UnsignedIntVec4),
+        gl::BOOL => Some(UniformType::Bool),
+        gl::BOOL_VEC2 => Some(UniformType::BoolVec2),
+        gl::BOOL_VEC3 => Some(UniformType::BoolVec3),
+        gl::BOOL_VEC4 => Some(UniformType::BoolVec4),
+        gl::FLOAT_MAT2 => Some(UniformType::FloatMat2),
+        gl::FLOAT_MAT3 => Some(UniformType::FloatMat3),
+        gl::FLOAT_MAT4 => Some(UniformType::FloatMat4),
+        gl::FLOAT_MAT2x3 => Some(UniformType::FloatMat2x3),
+        gl::FLOAT_MAT2x4 => Some(UniformType::FloatMat2x4),
+        gl::FLOAT_MAT3x2 => Some(UniformType::FloatMat3x2),
+        gl::FLOAT_MAT3x4 => Some(UniformType::FloatMat3x4),
+        gl::FLOAT_MAT4x2 => Some(UniformType::FloatMat4x2),
+        gl::FLOAT_MAT4x3 => Some(UniformType::FloatMat4x3),
+        gl::SAMPLER_1D => Some(UniformType::Sampler1d),
+        gl::SAMPLER_2D => Some(UniformType::Sampler2d),
+        gl::SAMPLER_3D => Some(UniformType::Sampler3d),
+        gl::SAMPLER_CUBE => Some(UniformType::SamplerCube),
+        gl::SAMPLER_1D_SHADOW => Some(UniformType::Sampler1dShadow),
+        gl::SAMPLER_2D_SHADOW => Some(UniformType::Sampler2dShadow),
+        gl::SAMPLER_1D_ARRAY => Some(UniformType::Sampler1dArray),
+        gl::SAMPLER_2D_ARRAY => Some(UniformType::Sampler2dArray),
+        gl::SAMPLER_1D_ARRAY_SHADOW => Some(UniformType::Sampler1dArrayShadow),
+        gl::SAMPLER_2D_ARRAY_SHADOW => Some(UniformType::Sampler2dArrayShadow),
+        gl::SAMPLER_2D_MULTISAMPLE => Some(UniformType::Sampler2dMultisample),
+        gl::SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformType::Sampler2dMultisampleArray),
+        gl::SAMPLER_CUBE_SHADOW => Some(UniformType::SamplerCubeShadow),
+        gl::SAMPLER_BUFFER => Some(UniformType::SamplerBuffer),
+        gl::SAMPLER_2D_RECT => Some(UniformType::Sampler2dRect),
+        gl::SAMPLER_2D_RECT_SHADOW => Some(UniformType::Sampler2dRectShadow),
+        gl::INT_SAMPLER_1D => Some(UniformType::IntSampler1d),
+        gl::INT_SAMPLER_2D => Some(UniformType::IntSampler2d),
+        gl::INT_SAMPLER_3D => Some(UniformType::IntSampler3d),
+        gl::INT_SAMPLER_CUBE => Some(UniformType::IntSamplerCube),
+        gl::INT_SAMPLER_1D_ARRAY => Some(UniformType::IntSampler1dArray),
+        gl::INT_SAMPLER_2D_ARRAY => Some(UniformType::IntSampler2dArray),
+        gl::INT_SAMPLER_2D_MULTISAMPLE => Some(UniformType::IntSampler2dMultisample),
+        gl::INT_SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformType::IntSampler2dMultisampleArray),
+        gl::INT_SAMPLER_BUFFER => Some(UniformType::IntSamplerBuffer),
+        gl::INT_SAMPLER_2D_RECT => Some(UniformType::IntSampler2dRect),
+        gl::UNSIGNED_INT_SAMPLER_1D => Some(UniformType::UnsignedIntSampler1d),
+        gl::UNSIGNED_INT_SAMPLER_2D => Some(UniformType::UnsignedIntSampler2d),
+        gl::UNSIGNED_INT_SAMPLER_3D => Some(UniformType::UnsignedIntSampler3d),
+        gl::UNSIGNED_INT_SAMPLER_CUBE => Some(UniformType::UnsignedIntSamplerCube),
+        gl::UNSIGNED_INT_SAMPLER_1D_ARRAY => Some(UniformType::UnsignedIntSampler1dArray),
+        gl::UNSIGNED_INT_SAMPLER_2D_ARRAY => Some(UniformType::UnsignedIntSampler2dArray),
+        gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE => Some(UniformType::UnsignedIntSampler2dMultisample),
+        gl::UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY => Some(UniformType::UnsignedIntSampler2dMultisampleArray),
+        gl::UNSIGNED_INT_SAMPLER_BUFFER => Some(UniformType::UnsignedIntSamplerBuffer),
+        gl::UNSIGNED_INT_SAMPLER_2D_RECT => Some(UniformType::UnsignedIntSampler2dRect),
         _ => None
     }
 }

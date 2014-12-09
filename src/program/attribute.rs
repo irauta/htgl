@@ -3,28 +3,31 @@ use gl;
 
 use super::super::util::slice_to_string;
 use super::Program;
-use super::super::{ShaderAttributeType,
-    ShaderAttributeFloat,
-    ShaderAttributeFloatVec2,
-    ShaderAttributeFloatVec3,
-    ShaderAttributeFloatVec4,
-    ShaderAttributeFloatMat2,
-    ShaderAttributeFloatMat3,
-    ShaderAttributeFloatMat4,
-    ShaderAttributeFloatMat2x3,
-    ShaderAttributeFloatMat2x4,
-    ShaderAttributeFloatMat3x2,
-    ShaderAttributeFloatMat3x4,
-    ShaderAttributeFloatMat4x2,
-    ShaderAttributeFloatMat4x3,
-    ShaderAttributeInt,
-    ShaderAttributeIntVec2,
-    ShaderAttributeIntVec3,
-    ShaderAttributeIntVec4,
-    ShaderAttributeUnsignedInt,
-    ShaderAttributeUnsignedIntVec2,
-    ShaderAttributeUnsignedIntVec3,
-    ShaderAttributeUnsignedIntVec4};
+
+#[deriving(Show)]
+pub enum ShaderAttributeType {
+    Float,
+    FloatVec2,
+    FloatVec3,
+    FloatVec4,
+    FloatMat2,
+    FloatMat3,
+    FloatMat4,
+    FloatMat2x3,
+    FloatMat2x4,
+    FloatMat3x2,
+    FloatMat3x4,
+    FloatMat4x2,
+    FloatMat4x3,
+    Int,
+    IntVec2,
+    IntVec3,
+    IntVec4,
+    UnsignedInt,
+    UnsignedIntVec2,
+    UnsignedIntVec3,
+    UnsignedIntVec4
+}
 
 #[deriving(Show)]
 pub struct ShaderAttributeInfo {
@@ -76,27 +79,27 @@ pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
 
 fn attribute_type_from_u32(gl_type: u32) -> Option<ShaderAttributeType> {
     match gl_type {
-        gl::FLOAT => Some(ShaderAttributeFloat),
-        gl::FLOAT_VEC2 => Some(ShaderAttributeFloatVec2),
-        gl::FLOAT_VEC3 => Some(ShaderAttributeFloatVec3),
-        gl::FLOAT_VEC4 => Some(ShaderAttributeFloatVec4),
-        gl::FLOAT_MAT2 => Some(ShaderAttributeFloatMat2),
-        gl::FLOAT_MAT3 => Some(ShaderAttributeFloatMat3),
-        gl::FLOAT_MAT4 => Some(ShaderAttributeFloatMat4),
-        gl::FLOAT_MAT2x3 => Some(ShaderAttributeFloatMat2x3),
-        gl::FLOAT_MAT2x4 => Some(ShaderAttributeFloatMat2x4),
-        gl::FLOAT_MAT3x2 => Some(ShaderAttributeFloatMat3x2),
-        gl::FLOAT_MAT3x4 => Some(ShaderAttributeFloatMat3x4),
-        gl::FLOAT_MAT4x2 => Some(ShaderAttributeFloatMat4x2),
-        gl::FLOAT_MAT4x3 => Some(ShaderAttributeFloatMat4x3),
-        gl::INT => Some(ShaderAttributeInt),
-        gl::INT_VEC2 => Some(ShaderAttributeIntVec2),
-        gl::INT_VEC3 => Some(ShaderAttributeIntVec3),
-        gl::INT_VEC4 => Some(ShaderAttributeIntVec4),
-        gl::UNSIGNED_INT => Some(ShaderAttributeUnsignedInt),
-        gl::UNSIGNED_INT_VEC2 => Some(ShaderAttributeUnsignedIntVec2),
-        gl::UNSIGNED_INT_VEC3 => Some(ShaderAttributeUnsignedIntVec3),
-        gl::UNSIGNED_INT_VEC4 => Some(ShaderAttributeUnsignedIntVec4),
+        gl::FLOAT => Some(ShaderAttributeType::Float),
+        gl::FLOAT_VEC2 => Some(ShaderAttributeType::FloatVec2),
+        gl::FLOAT_VEC3 => Some(ShaderAttributeType::FloatVec3),
+        gl::FLOAT_VEC4 => Some(ShaderAttributeType::FloatVec4),
+        gl::FLOAT_MAT2 => Some(ShaderAttributeType::FloatMat2),
+        gl::FLOAT_MAT3 => Some(ShaderAttributeType::FloatMat3),
+        gl::FLOAT_MAT4 => Some(ShaderAttributeType::FloatMat4),
+        gl::FLOAT_MAT2x3 => Some(ShaderAttributeType::FloatMat2x3),
+        gl::FLOAT_MAT2x4 => Some(ShaderAttributeType::FloatMat2x4),
+        gl::FLOAT_MAT3x2 => Some(ShaderAttributeType::FloatMat3x2),
+        gl::FLOAT_MAT3x4 => Some(ShaderAttributeType::FloatMat3x4),
+        gl::FLOAT_MAT4x2 => Some(ShaderAttributeType::FloatMat4x2),
+        gl::FLOAT_MAT4x3 => Some(ShaderAttributeType::FloatMat4x3),
+        gl::INT => Some(ShaderAttributeType::Int),
+        gl::INT_VEC2 => Some(ShaderAttributeType::IntVec2),
+        gl::INT_VEC3 => Some(ShaderAttributeType::IntVec3),
+        gl::INT_VEC4 => Some(ShaderAttributeType::IntVec4),
+        gl::UNSIGNED_INT => Some(ShaderAttributeType::UnsignedInt),
+        gl::UNSIGNED_INT_VEC2 => Some(ShaderAttributeType::UnsignedIntVec2),
+        gl::UNSIGNED_INT_VEC3 => Some(ShaderAttributeType::UnsignedIntVec3),
+        gl::UNSIGNED_INT_VEC4 => Some(ShaderAttributeType::UnsignedIntVec4),
         _ => None
     }
 }

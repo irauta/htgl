@@ -11,7 +11,21 @@ use super::IndexBufferHandle;
 use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
-use super::VertexAttributeType;
+
+#[deriving(Clone,Show)]
+pub enum VertexAttributeType {
+    Byte,
+    UnsignedByte,
+    Short,
+    UnsignedShort,
+    Int,
+    UnsignedInt,
+    HalfFloat,
+    Float,
+    Double,
+    Int2101010Rev,
+    UnsignedInt2101010Rev
+}
 
 #[deriving(Clone)]
 pub struct VertexAttribute {
@@ -147,32 +161,32 @@ impl Bind for VertexArray {
 
 fn attribute_to_gl_type(attribute_type: VertexAttributeType) -> GLenum {
     match attribute_type {
-        super::VertexAttributeByte => gl::BYTE,
-        super::VertexAttributeUnsignedByte => gl::UNSIGNED_BYTE,
-        super::VertexAttributeShort => gl::SHORT,
-        super::VertexAttributeUnsignedShort => gl::UNSIGNED_SHORT,
-        super::VertexAttributeInt => gl::INT,
-        super::VertexAttributeUnsignedInt => gl::UNSIGNED_INT,
-        super::VertexAttributeHalfFloat => gl::HALF_FLOAT,
-        super::VertexAttributeFloat => gl::FLOAT,
-        super::VertexAttributeDouble => gl::DOUBLE,
-        super::VertexAttributeInt2101010Rev => gl::INT_2_10_10_10_REV,
-        super::VertexAttributeUnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
+        VertexAttributeType::Byte => gl::BYTE,
+        VertexAttributeType::UnsignedByte => gl::UNSIGNED_BYTE,
+        VertexAttributeType::Short => gl::SHORT,
+        VertexAttributeType::UnsignedShort => gl::UNSIGNED_SHORT,
+        VertexAttributeType::Int => gl::INT,
+        VertexAttributeType::UnsignedInt => gl::UNSIGNED_INT,
+        VertexAttributeType::HalfFloat => gl::HALF_FLOAT,
+        VertexAttributeType::Float => gl::FLOAT,
+        VertexAttributeType::Double => gl::DOUBLE,
+        VertexAttributeType::Int2101010Rev => gl::INT_2_10_10_10_REV,
+        VertexAttributeType::UnsignedInt2101010Rev => gl::UNSIGNED_INT_2_10_10_10_REV
     }
 }
 
 fn attribute_to_size(attribute_type: VertexAttributeType) -> GLenum {
     match attribute_type {
-        super::VertexAttributeByte => 1,
-        super::VertexAttributeUnsignedByte => 1,
-        super::VertexAttributeShort => 2,
-        super::VertexAttributeUnsignedShort => 2,
-        super::VertexAttributeInt => 4,
-        super::VertexAttributeUnsignedInt => 4,
-        super::VertexAttributeHalfFloat => 2,
-        super::VertexAttributeFloat => 4,
-        super::VertexAttributeDouble => 8,
-        super::VertexAttributeInt2101010Rev => 4,
-        super::VertexAttributeUnsignedInt2101010Rev => 4
+        VertexAttributeType::Byte => 1,
+        VertexAttributeType::UnsignedByte => 1,
+        VertexAttributeType::Short => 2,
+        VertexAttributeType::UnsignedShort => 2,
+        VertexAttributeType::Int => 4,
+        VertexAttributeType::UnsignedInt => 4,
+        VertexAttributeType::HalfFloat => 2,
+        VertexAttributeType::Float => 4,
+        VertexAttributeType::Double => 8,
+        VertexAttributeType::Int2101010Rev => 4,
+        VertexAttributeType::UnsignedInt2101010Rev => 4
     }
 }

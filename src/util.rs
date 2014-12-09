@@ -1,6 +1,4 @@
 
-use std::str::{Slice,Owned};
-
 use gl;
 
 pub fn check_error(file: &str, line: uint) {
@@ -29,8 +27,5 @@ pub fn vec_to_string(vec: Vec<u8>) -> String {
 }
 
 pub fn slice_to_string(slice: &[u8]) -> String {
-    match String::from_utf8_lossy(slice) {
-        Owned(string) => string,
-        Slice(str_slice) => String::from_str(str_slice)
-    }
+    String::from_utf8_lossy(slice).into_owned()
 }

@@ -2,13 +2,17 @@
 use gl;
 use gl::types::GLenum;
 
-use super::RenderOption;
+pub enum RenderOption {
+    ClearColor(f32, f32, f32, f32),
+    DepthTest(bool),
+    CullingEnabled(bool)
+}
 
 pub fn set_option(option: RenderOption) {
     match option {
-        super::ClearColor(r, g, b, a) => unsafe { gl::ClearColor(r, g, b, a) },
-        super::DepthTest(enable) => set_capability(gl::DEPTH_TEST, enable),
-        super::CullingEnabled(enable) => set_capability(gl::CULL_FACE, enable)
+        RenderOption::ClearColor(r, g, b, a) => unsafe { gl::ClearColor(r, g, b, a) },
+        RenderOption::DepthTest(enable) => set_capability(gl::DEPTH_TEST, enable),
+        RenderOption::CullingEnabled(enable) => set_capability(gl::CULL_FACE, enable)
     }
 }
 
