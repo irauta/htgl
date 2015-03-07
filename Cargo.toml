@@ -8,7 +8,8 @@ authors = [ "Ilkka Rauta" ]
 git = "https://github.com/bjz/gl-rs.git"
 
 [dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs.git"
+#git = "https://github.com/bjz/glfw-rs.git"
+path = "../glfw-rs"
 
 [lib]
 name = "mog"

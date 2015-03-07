@@ -1,6 +1,4 @@
 
-#![feature(slicing_syntax)]
-
 extern crate glfw;
 
 extern crate mog;
@@ -72,13 +70,14 @@ void main() {
 ";
 
 fn main() {
-    let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
     glfw.window_hint(glfw::WindowHint::ContextVersion(3, 3));
     glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
+    glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
 
     // Create a windowed mode window and its OpenGL context
-    let (window, events) = glfw.create_window(300, 300, "Hello this is window", glfw::WindowMode::Windowed)
+    let (mut window, events) = glfw.create_window(300, 300, "Hello this is window", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
     window.set_key_polling(true);
@@ -87,7 +86,7 @@ fn main() {
     mog::load_with(|s| window.get_proc_address(s));
 
     let mut ctx = mog::Context::new();
-    println!("{}", ctx.get_info());
+    println!("{:?}", ctx.get_info());
     ctx.renderer().set_option(RenderOption::ClearColor(1f32, 1f32, 1f32, 1f32));
     ctx.renderer().set_option(RenderOption::DepthTest(false));
     ctx.renderer().set_option(RenderOption::CullingEnabled(true));
@@ -124,23 +123,23 @@ fn main() {
         let scale_location = uniform_info.get_global_uniform("scale").map(|u| u.location).unwrap_or(-1);
         program_editor.uniform_f32(scale_location, 1, SimpleUniformTypeFloat::Uniform1f, &[1.5]);
         for uniform in uniform_info.globals.iter() {
-            println!("{}", uniform);
+            println!("{:?}", uniform);
         }
         for block in uniform_info.blocks.iter() {
             println!("InterfaceBlock {{ name: {}, index: {}, data_size: {} }}", block.name, block.index, block.data_size);
             for uniform in block.uniforms.iter() {
-                println!("    {}", uniform);
+                println!("    {:?}", uniform);
             }
         }
         for attribute in program_info.get_attribute_info().attributes.iter() {
-            println!("{}", attribute)
+            println!("{:?}", attribute)
         }
     }
 
     while !window.should_close() {
         glfw.poll_events();
         for (_, event) in glfw::flush_messages(&events) {
-            handle_window_event(&window, event);
+            handle_window_event(&mut window, event);
         }
 
         let mut renderer = ctx.renderer();
@@ -154,7 +153,7 @@ fn main() {
     }
 }
 
-fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
+fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
     match event {
         glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
             window.set_should_close(true)

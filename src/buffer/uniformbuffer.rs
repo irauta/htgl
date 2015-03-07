@@ -29,7 +29,7 @@ impl<'a> UniformBufferEditor<'a> {
         self.uniform_buffer.data(data);
     }
 
-    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
+    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: usize) {
         self.uniform_buffer.sub_data(data, byte_offset);
     }
 }

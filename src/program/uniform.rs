@@ -1,13 +1,15 @@
 
+use std::iter::repeat;
 use std::ptr::null_mut;
-use std::fmt::Show;
+use std::fmt::Debug;
+use std::ffi::CString;
 
 use gl;
 use gl::types::GLenum;
 
 use super::Program;
 
-#[deriving(Show)]
+#[derive(Copy,Debug)]
 pub enum SimpleUniformTypeFloat {
     Uniform1f,
     Uniform2f,
@@ -15,7 +17,7 @@ pub enum SimpleUniformTypeFloat {
     Uniform4f
 }
 
-#[deriving(Show)]
+#[derive(Copy,Debug)]
 pub enum SimpleUniformTypeMatrix {
     Matrix2f,
     Matrix3f,
@@ -28,7 +30,7 @@ pub enum SimpleUniformTypeMatrix {
     Matrix4x3f
 }
 
-#[deriving(Show)]
+#[derive(Copy,Debug)]
 pub enum SimpleUniformTypeInt {
     Uniform1i,
     Uniform2i,
@@ -36,15 +38,15 @@ pub enum SimpleUniformTypeInt {
     Uniform4i
 }
 
-#[deriving(Show)]
-pub enum SimpleUniformTypeUint {
+#[derive(Copy,Debug)]
+pub enum SimpleUniformTypeusize {
     Uniform1u,
     Uniform2u,
     Uniform3u,
     Uniform4u
 }
 
-#[deriving(Show)]
+#[derive(Copy,Debug)]
 pub enum UniformType {
     Float,
     FloatVec2,
@@ -135,7 +137,7 @@ impl GlUniform {
 }
 
 /// Top-level result structure for program's uniform introspection
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct UniformInfo {
     pub globals: Vec<Uniform>,
     pub blocks: Vec<InterfaceBlock>
@@ -144,7 +146,7 @@ pub struct UniformInfo {
 impl UniformInfo {
     pub fn get_global_uniform(&self, name: &str) -> Option<&Uniform> {
         for uniform in self.globals.iter() {
-            if uniform.name[] == name {
+            if uniform.name == name {
                 return Some(uniform);
             }
         }
@@ -153,7 +155,7 @@ impl UniformInfo {
 
     pub fn get_block(&self, name: &str) -> Option<&InterfaceBlock> {
         for block in self.blocks.iter() {
-            if block.name[] == name {
+            if block.name == name {
                 return Some(block);
             }
         }
@@ -169,7 +171,7 @@ impl UniformInfo {
 }
 
 /// An uniform not in a block
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct Uniform {
     pub name: String,
     pub location: i32,
@@ -189,7 +191,7 @@ impl Uniform {
 }
 
 /// Description of an uniform block
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct InterfaceBlock {
     pub name: String,
     pub index: u32,
@@ -200,7 +202,7 @@ pub struct InterfaceBlock {
 impl InterfaceBlock {
     pub fn get_uniform(&self, name: &str) -> Option<&BlockUniform> {
         for uniform in self.uniforms.iter() {
-            if uniform.name[] == name {
+            if uniform.name == name {
                 return Some(uniform);
             }
         }
@@ -208,7 +210,7 @@ impl InterfaceBlock {
     }
 }
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct BlockUniform {
     pub name: String,
     pub uniform_type: Option<UniformType>,
@@ -237,11 +239,11 @@ pub fn make_uniform_info(program: &Program) -> UniformInfo {
     let mut blocks = make_uniform_block_info_vec(program);
     for gl_uniform in gl_uniforms.into_iter() {
         if gl_uniform.block_index < 0 {
-            let location = program.get_uniform_location(gl_uniform.name[]);
+            let location = program.get_uniform_location(&gl_uniform.name[..]);
             globals.push(Uniform::new(gl_uniform, location));
         }
         else {
-            let index = gl_uniform.block_index as uint;
+            let index = gl_uniform.block_index as usize;
             blocks[index].uniforms.push(BlockUniform::new(gl_uniform));
         }
     }
@@ -252,30 +254,33 @@ pub fn make_uniform_info(program: &Program) -> UniformInfo {
 }
 
 fn make_gl_uniform_info_vec(program: &Program) -> Vec<GlUniform> {
-    let count = program.get_value(gl::ACTIVE_UNIFORMS) as uint;
+    let count = program.get_value(gl::ACTIVE_UNIFORMS) as usize;
     if count == 0 {
         return Vec::new();
     }
-    let mut info_vec = Vec::with_capacity(count);
-    let mut intvalues = Vec::from_elem(count, 0);
-    let indices = Vec::from_fn(count, |i| i as u32);
+    //let mut info_vec = Vec::with_capacity(count);
+    let mut intvalues = repeat(0).take(count).collect();
+    let indices = (0..count as u32).collect();
     fill_uniform_info_vec(program.id, &indices, gl::UNIFORM_NAME_LENGTH, &mut intvalues);
-    for (index, expected_len) in intvalues.iter().enumerate() {
-        info_vec.push(GlUniform::new(uniform_name(program.id, index as u32, *expected_len as u32)));
-    }
+    //for (index, expected_len) in intvalues.iter().enumerate() {
+    //    info_vec.push(GlUniform::new(uniform_name(program.id, index as u32, *expected_len as u32)));
+    //}
+    let mut info_vec: Vec<GlUniform> = intvalues.iter().enumerate()
+        .map(|(index, expected_len)| GlUniform::new(uniform_name(program.id, index as u32, *expected_len as u32)))
+        .collect();
     {
-        let fill_info = |property, info_fn: |&mut GlUniform, i32|| {
+        let mut fill_info = |property, info_fn: &mut Fn(&mut GlUniform, i32)| {
             fill_uniform_info_vec(program.id, &indices, property, &mut intvalues);
             for (info, value) in info_vec.iter_mut().zip(intvalues.iter()) {
                 info_fn(info, *value);
             }
         };
-        fill_info(gl::UNIFORM_SIZE, |info, value| info.size = value);
-        fill_info(gl::UNIFORM_TYPE, |info, value| info.uniform_type = value);
-        fill_info(gl::UNIFORM_OFFSET, |info, value| info.offset = value);
-        fill_info(gl::UNIFORM_BLOCK_INDEX, |info, value| info.block_index = value);
-        fill_info(gl::UNIFORM_ARRAY_STRIDE, |info, value| info.array_stride = value);
-        fill_info(gl::UNIFORM_MATRIX_STRIDE, |info, value| info.matrix_stride = value);
+        fill_info(gl::UNIFORM_SIZE, &mut|info, value| info.size = value);
+        fill_info(gl::UNIFORM_TYPE, &mut|info, value| info.uniform_type = value);
+        fill_info(gl::UNIFORM_OFFSET, &mut|info, value| info.offset = value);
+        fill_info(gl::UNIFORM_BLOCK_INDEX, &mut|info, value| info.block_index = value);
+        fill_info(gl::UNIFORM_ARRAY_STRIDE, &mut|info, value| info.array_stride = value);
+        fill_info(gl::UNIFORM_MATRIX_STRIDE, &mut|info, value| info.matrix_stride = value);
     }
     info_vec
 }
@@ -285,12 +290,12 @@ fn make_uniform_block_info_vec(program: &Program) -> Vec<InterfaceBlock> {
     if count == 0 {
         return Vec::new();
     }
-    let mut info_vec = Vec::with_capacity(count as uint);
-    for index in range(0, count as u32) {
+    let mut info_vec = Vec::with_capacity(count as usize);
+    for index in 0..count as u32 {
         let expected_len = get_block_info(program.id, index, gl::UNIFORM_BLOCK_NAME_LENGTH) as u32;
         let data_size = get_block_info(program.id, index, gl::UNIFORM_BLOCK_DATA_SIZE);
         let name = block_name(program.id, index, expected_len);
-        let index = get_uniform_block_index(program.id, name[]);
+        let index = get_uniform_block_index(program.id, &name[..]);
         info_vec.push(InterfaceBlock {
             index: index,
             name: name,
@@ -318,7 +323,7 @@ fn get_block_info(program_id: u32, block_index: u32, property: GLenum) -> i32 {
 }
 
 fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
-    let mut name_vec = Vec::from_elem(expected_len as uint, 0u8);
+    let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
         let name_ptr = name_vec.as_mut_slice().as_mut_ptr() as *mut i8;
         gl::GetActiveUniformName(program_id, index, name_vec.len() as i32, null_mut(), name_ptr);
@@ -329,7 +334,7 @@ fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
 }
 
 fn block_name(program_id: u32, index: u32, expected_len: u32) -> String {
-    let mut name_vec = Vec::from_elem(expected_len as uint, 0u8);
+    let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
         let name_ptr = name_vec.as_mut_slice().as_mut_ptr() as *mut i8;
         gl::GetActiveUniformBlockName(program_id, index, name_vec.len() as i32, null_mut(), name_ptr);
@@ -340,7 +345,7 @@ fn block_name(program_id: u32, index: u32, expected_len: u32) -> String {
 }
 
 fn get_uniform_block_index(program_id: u32, name: &str) -> u32 {
-    let c_name = name.to_c_str();
+    let c_name = CString::new(name).unwrap();
     unsafe {
         let index = gl::GetUniformBlockIndex(program_id, c_name.as_ptr());
         check_error!();
@@ -348,7 +353,7 @@ fn get_uniform_block_index(program_id: u32, name: &str) -> u32 {
     }
 }
 
-pub fn uniform_f32(location: i32, count: uint, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
+pub fn uniform_f32(location: i32, count: usize, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
     validate_uniform_f32(count, uniform_type, values);
     let count = count as i32;
     unsafe {
@@ -362,7 +367,7 @@ pub fn uniform_f32(location: i32, count: uint, uniform_type: SimpleUniformTypeFl
     }
 }
 
-pub fn uniform_matrix(location: i32, count: uint, uniform_type: SimpleUniformTypeMatrix, transpose: bool, values: &[f32]) {
+pub fn uniform_matrix(location: i32, count: usize, uniform_type: SimpleUniformTypeMatrix, transpose: bool, values: &[f32]) {
     validate_uniform_matrix(count, uniform_type, values);
     let count = count as i32;
     let transpose = if transpose { gl::TRUE } else { gl::FALSE };
@@ -382,21 +387,21 @@ pub fn uniform_matrix(location: i32, count: uint, uniform_type: SimpleUniformTyp
     }
 }
 
-pub fn uniform_u32(location: i32, count: uint, uniform_type: SimpleUniformTypeUint, values: &[u32]) {
+pub fn uniform_u32(location: i32, count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
     validate_uniform_u32(count, uniform_type, values);
     let count = count as i32;
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniformTypeUint::Uniform1u => gl::Uniform1uiv(location, count, value_ptr),
-            SimpleUniformTypeUint::Uniform2u => gl::Uniform2uiv(location, count, value_ptr),
-            SimpleUniformTypeUint::Uniform3u => gl::Uniform3uiv(location, count, value_ptr),
-            SimpleUniformTypeUint::Uniform4u => gl::Uniform4uiv(location, count, value_ptr),
+            SimpleUniformTypeusize::Uniform1u => gl::Uniform1uiv(location, count, value_ptr),
+            SimpleUniformTypeusize::Uniform2u => gl::Uniform2uiv(location, count, value_ptr),
+            SimpleUniformTypeusize::Uniform3u => gl::Uniform3uiv(location, count, value_ptr),
+            SimpleUniformTypeusize::Uniform4u => gl::Uniform4uiv(location, count, value_ptr),
         }
     }
 }
 
-pub fn uniform_i32(location: i32, count: uint, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+pub fn uniform_i32(location: i32, count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
     validate_uniform_i32(count, uniform_type, values);
     let count = count as i32;
     unsafe {
@@ -410,7 +415,7 @@ pub fn uniform_i32(location: i32, count: uint, uniform_type: SimpleUniformTypeIn
     }
 }
 
-fn validate_uniform_f32(count: uint, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
+fn validate_uniform_f32(count: usize, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeFloat::Uniform1f => 1,
         SimpleUniformTypeFloat::Uniform2f => 2,
@@ -420,7 +425,7 @@ fn validate_uniform_f32(count: uint, uniform_type: SimpleUniformTypeFloat, value
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform_matrix(count: uint, uniform_type: SimpleUniformTypeMatrix, values: &[f32]) {
+fn validate_uniform_matrix(count: usize, uniform_type: SimpleUniformTypeMatrix, values: &[f32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeMatrix::Matrix2f => 2 * 2,
         SimpleUniformTypeMatrix::Matrix3f => 3 * 3,
@@ -435,17 +440,17 @@ fn validate_uniform_matrix(count: uint, uniform_type: SimpleUniformTypeMatrix, v
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform_u32(count: uint, uniform_type: SimpleUniformTypeUint, values: &[u32]) {
+fn validate_uniform_u32(count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
     let element_count = match uniform_type {
-        SimpleUniformTypeUint::Uniform1u => 1,
-        SimpleUniformTypeUint::Uniform2u => 2,
-        SimpleUniformTypeUint::Uniform3u => 3,
-        SimpleUniformTypeUint::Uniform4u => 4
+        SimpleUniformTypeusize::Uniform1u => 1,
+        SimpleUniformTypeusize::Uniform2u => 2,
+        SimpleUniformTypeusize::Uniform3u => 3,
+        SimpleUniformTypeusize::Uniform4u => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform_i32(count: uint, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+fn validate_uniform_i32(count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeInt::Uniform1i => 1,
         SimpleUniformTypeInt::Uniform2i => 2,
@@ -455,10 +460,10 @@ fn validate_uniform_i32(count: uint, uniform_type: SimpleUniformTypeInt, values:
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform<T, U: Show>(count: uint, uniform_type: U, element_count: uint, values: &[T]) {
+fn validate_uniform<T, U: Debug>(count: usize, uniform_type: U, element_count: usize, values: &[T]) {
     let expected_len = count * element_count;
     if expected_len > values.len() {
-        panic!("Too small uniform value slice: {} of {} would take {} elements, but only got {}",
+        panic!("Too small uniform value slice: {} of {:?} would take {} elements, but only got {}",
             count, uniform_type, expected_len, values.len());
     }
 }

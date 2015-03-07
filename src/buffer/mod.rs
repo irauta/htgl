@@ -4,6 +4,8 @@ use gl::types::{GLenum,GLsizeiptr,GLvoid};
 
 use std::mem::size_of;
 
+use std::marker::PhantomData;
+
 use super::tracker::Bind;
 use super::context::RegistrationHandle;
 use super::tracker::TrackerId;
@@ -20,7 +22,8 @@ pub struct BufferObject<T> {
     pub id: u32,
     tracker_id: TrackerId,
     registration: RegistrationHandle,
-    target: GLenum
+    target: GLenum,
+    marker: PhantomData<T>
 }
 
 impl<T> BufferObject<T> {
@@ -30,7 +33,13 @@ impl<T> BufferObject<T> {
             gl::GenBuffers(1, &mut id);
             check_error!();
         }
-        BufferObject { id: id, tracker_id: tracker_id, registration: registration, target: target }
+        BufferObject {
+            id: id,
+            tracker_id: tracker_id,
+            registration: registration,
+            target: target,
+            marker: PhantomData
+        }
     }
 
     pub fn data<D>(&self, data: &[D]) {
@@ -41,7 +50,7 @@ impl<T> BufferObject<T> {
         }
     }
 
-    pub fn sub_data<D>(&self, data: &[D], byte_offset: uint) {
+    pub fn sub_data<D>(&self, data: &[D], byte_offset: usize) {
         let data_size = (size_of::<D>() * data.len()) as GLsizeiptr;
         unsafe {
             gl::BufferSubData(self.target, data_size, byte_offset as GLsizeiptr, data.as_ptr() as *const GLvoid);

@@ -1,18 +1,24 @@
 
 use std::rc::{Rc,Weak};
 
+use std::marker::PhantomData;
+
 pub trait Bind {
     fn bind(&self);
     fn get_id(&self) -> TrackerId;
 }
 
 pub struct SimpleBindingTracker<T> {
-    currently_bound: TrackerId
+    currently_bound: TrackerId,
+    marker: PhantomData<T>
 }
 
 impl<T: Bind> SimpleBindingTracker<T> {
     pub fn new() -> SimpleBindingTracker<T> {
-        SimpleBindingTracker { currently_bound: TrackerId { id: 0 } }
+        SimpleBindingTracker {
+            currently_bound: TrackerId { id: 0 },
+            marker: PhantomData
+        }
     }
 
     pub fn bind(&mut self, resource: &T) {
@@ -55,6 +61,7 @@ impl<T: Bind> RenderBindingTracker<T> {
     }
 }
 
+#[derive(Copy)]
 pub struct TrackerId {
     id: u32
 }

@@ -2,12 +2,12 @@
 use gl;
 use gl::types::{GLint,GLenum};
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct ContextInfo {
     pub uniform_buffer: UniformBufferInfo
 }
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct UniformBufferInfo {
     pub max_bindings: GLint,
     pub max_geometry_blocks: GLint,

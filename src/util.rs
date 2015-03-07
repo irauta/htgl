@@ -1,7 +1,7 @@
 
 use gl;
 
-pub fn check_error(file: &str, line: uint) {
+pub fn check_error(file: &str, line: u32) {
     let err_code = unsafe { gl::GetError() };
     if err_code != 0 {
         let message = match err_code {
@@ -22,7 +22,7 @@ pub fn check_error(file: &str, line: uint) {
 pub fn vec_to_string(vec: Vec<u8>) -> String {
     match String::from_utf8(vec) {
         Ok(string) => string,
-        Err(vec) => slice_to_string(vec[])
+        Err(err) => slice_to_string(&err.into_bytes()[..])
     }
 }
 

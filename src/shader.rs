@@ -1,4 +1,6 @@
 
+use std::iter::repeat;
+
 use gl;
 use gl::types::{GLenum,GLint,GLsizei};
 
@@ -31,8 +33,7 @@ impl Shader {
     fn get_info_log(&self) -> String {
         let info_length = self.get_info_length();
         let mut actual_info_length = 0;
-        let mut info_vec = Vec::with_capacity(info_length as uint);
-        info_vec.grow(info_length as uint, 0u8);
+        let mut info_vec: Vec<u8> = repeat(0u8).take(info_length as usize).collect();
         unsafe {
             let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
             gl::GetShaderInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);

@@ -1,10 +1,12 @@
 
+use std::iter::repeat;
+
 use gl;
 
 use super::super::util::slice_to_string;
 use super::Program;
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub enum ShaderAttributeType {
     Float,
     FloatVec2,
@@ -29,7 +31,7 @@ pub enum ShaderAttributeType {
     UnsignedIntVec4
 }
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct ShaderAttributeInfo {
     pub attributes: Vec<ShaderAttribute>
 }
@@ -37,7 +39,7 @@ pub struct ShaderAttributeInfo {
 impl ShaderAttributeInfo {
     pub fn get_attribute(&self, name: &str) -> Option<&ShaderAttribute> {
         for attribute in self.attributes.iter() {
-            if attribute.name[] == name {
+            if attribute.name == name {
                 return Some(attribute);
             }
         }
@@ -45,7 +47,7 @@ impl ShaderAttributeInfo {
     }
 }
 
-#[deriving(Show)]
+#[derive(Debug)]
 pub struct ShaderAttribute {
     pub name: String,
     pub location: i32,
@@ -56,8 +58,8 @@ pub struct ShaderAttribute {
 pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
     let attr_count = program.get_value(gl::ACTIVE_ATTRIBUTES);
     let max_length = program.get_value(gl::ACTIVE_ATTRIBUTE_MAX_LENGTH);
-    let mut name_vec = Vec::from_elem(max_length as uint, 0u8);
-    ShaderAttributeInfo { attributes: Vec::from_fn(attr_count as uint, |i| {
+    let mut name_vec: Vec<u8> = repeat(0u8).take(max_length as usize).collect();
+    ShaderAttributeInfo { attributes: (0..attr_count as usize).map(|i| {
         let mut actual_length = 0;
         let mut size = 0;
         let mut gl_type = 0;
@@ -65,16 +67,16 @@ pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
         unsafe {
             gl::GetActiveAttrib(program.id, i as u32, name_vec.len() as i32, &mut actual_length, &mut size, &mut gl_type, name_vec_ptr);
         }
-        let name = slice_to_string(name_vec.slice_to_or_fail(&(actual_length as uint)));
+        let name = slice_to_string(&name_vec[0..actual_length as usize]);
         let attribute_type = attribute_type_from_u32(gl_type);
-        let location = program.get_attribute_location(name[]);
+        let location = program.get_attribute_location(&name[..]);
         ShaderAttribute {
             name: name,
             location: location,
             attribute_type: attribute_type,
             size: size
         }
-    })}
+    }).collect()}
 }
 
 fn attribute_type_from_u32(gl_type: u32) -> Option<ShaderAttributeType> {

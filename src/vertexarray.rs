@@ -12,7 +12,7 @@ use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
 
-#[deriving(Clone,Show)]
+#[derive(Copy,Clone,Debug)]
 pub enum VertexAttributeType {
     Byte,
     UnsignedByte,
@@ -27,7 +27,7 @@ pub enum VertexAttributeType {
     UnsignedInt2101010Rev
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct VertexAttribute {
     pub index: u32,
     pub size: u8,
@@ -102,7 +102,7 @@ impl VertexArray {
         for ref mut attr in full_attributes.iter_mut() {
             attr.stride = stride;
         }
-        VertexArray::new(ctx, tracker_id, full_attributes.as_slice(), index_buffer, registration)
+        VertexArray::new(ctx, tracker_id, &full_attributes[..], index_buffer, registration)
     }
 
     fn set_vertex_attribute(ctx: &mut Context, attribute: &VertexAttribute) {

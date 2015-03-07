@@ -1,7 +1,6 @@
 
-#![feature(unsafe_destructor,macro_rules,slicing_syntax)]
+#![feature(unsafe_destructor,alloc)]
 
-extern crate core;
 extern crate gl;
 
 pub use gl::load_with;
@@ -18,7 +17,7 @@ pub use program::{ProgramEditor,
     SimpleUniformTypeFloat,
     SimpleUniformTypeInt,
     SimpleUniformTypeMatrix,
-    SimpleUniformTypeUint};
+    SimpleUniformTypeusize};
 pub use shader::ShaderInfoAccessor;
 pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
@@ -35,7 +34,7 @@ use handle::Handle;
 
 macro_rules! check_error(
     () => (::util::check_error(file!(), line!()));
-)
+);
 
 mod handle;
 mod buffer;

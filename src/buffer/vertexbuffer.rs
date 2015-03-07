@@ -29,7 +29,7 @@ impl<'a> VertexBufferEditor<'a> {
         self.vertex_buffer.data(data);
     }
 
-    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: uint) {
+    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: usize) {
         self.vertex_buffer.sub_data(data, byte_offset);
     }
 }

@@ -1,4 +1,7 @@
 
+use std::iter::repeat;
+use std::ffi::CString;
+
 use gl;
 use gl::types::GLenum;
 
@@ -9,7 +12,7 @@ use super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::ShaderHandle;
 use super::tracker::TrackerId;
 
-pub use self::uniform::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeUint};
+pub use self::uniform::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeusize};
 pub use self::uniform::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
 pub use self::attribute::{ShaderAttributeInfo,ShaderAttribute};
 
@@ -38,7 +41,7 @@ impl Program {
     }
 
     pub fn get_attribute_location(&self, name: &str) -> i32 {
-        let c_name = name.to_c_str();
+        let c_name = CString::new(name).unwrap();
         unsafe {
             let location = gl::GetAttribLocation(self.id, c_name.as_ptr());
             check_error!();
@@ -47,7 +50,7 @@ impl Program {
     }
 
     pub fn get_uniform_location(&self, name: &str) -> i32 {
-        let c_name = name.to_c_str();
+        let c_name = CString::new(name).unwrap();
         unsafe {
             let location = gl::GetUniformLocation(self.id, c_name.as_ptr());
             check_error!();
@@ -56,7 +59,7 @@ impl Program {
     }
 
     pub fn get_frag_data_location(&self, name: &str) -> i32 {
-        let c_name = name.to_c_str();
+        let c_name = CString::new(name).unwrap();
         unsafe {
             let location = gl::GetFragDataLocation(self.id, c_name.as_ptr());
             check_error!();
@@ -65,7 +68,7 @@ impl Program {
     }
 
     pub fn get_frag_data_index(&self, name: &str) -> i32 {
-        let c_name = name.to_c_str();
+        let c_name = CString::new(name).unwrap();
         unsafe {
             let location = gl::GetFragDataIndex(self.id, c_name.as_ptr());
             check_error!();
@@ -89,8 +92,7 @@ impl Program {
     fn get_info_log(&self) -> String {
         let info_length = self.get_value(gl::INFO_LOG_LENGTH);
         let mut actual_info_length = 0;
-        let mut info_vec = Vec::with_capacity(info_length as uint);
-        info_vec.grow(info_length as uint, 0u8);
+        let mut info_vec: Vec<u8> = repeat(0u8).take(info_length as usize).collect();
         unsafe {
             let info_vec_ptr = info_vec.as_mut_ptr() as *mut i8;
             gl::GetProgramInfoLog(self.id, info_length, &mut actual_info_length, info_vec_ptr);
@@ -190,19 +192,19 @@ pub struct ProgramEditor<'a> {
 }
 
 impl<'a> ProgramEditor<'a> {
-    pub fn uniform_f32(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
+    pub fn uniform_f32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
         uniform::uniform_f32(location, count, uniform_type, values)
     }
 
-    pub fn uniform_matrix(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeMatrix, transpose: bool, values: &[f32]) {
+    pub fn uniform_matrix(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeMatrix, transpose: bool, values: &[f32]) {
         uniform::uniform_matrix(location, count, uniform_type, transpose, values)
     }
 
-    pub fn uniform_u32(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeUint, values: &[u32]) {
+    pub fn uniform_u32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
         uniform::uniform_u32(location, count, uniform_type, values)
     }
 
-    pub fn uniform_i32(&self, location: i32, count: uint, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+    pub fn uniform_i32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
         uniform::uniform_i32(location, count, uniform_type, values)
     }
 

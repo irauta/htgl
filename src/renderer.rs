@@ -4,7 +4,7 @@ use gl::types::{GLint,GLsizei,GLvoid,GLenum};
 
 use super::{VertexArrayHandle,ProgramHandle};
 use super::context::{Context,ContextRenderingSupport};
-use super::options::{mod,RenderOption};
+use super::options::{self,RenderOption};
 
 pub enum PrimitiveMode {
     Triangles

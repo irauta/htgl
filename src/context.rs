@@ -1,11 +1,11 @@
 
-use core::cell::RefCell;
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use super::{VertexBufferHandle,IndexBufferHandle,UniformBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
 use super::handle::{new_handle,HandleAccess};
-use super::program::{mod,Program,ProgramEditor,ProgramInfoAccessor};
-use super::shader::{mod,Shader,ShaderInfoAccessor,ShaderType};
+use super::program::{self,Program,ProgramEditor,ProgramInfoAccessor};
+use super::shader::{self,Shader,ShaderInfoAccessor,ShaderType};
 use super::buffer;
 use super::buffer::vertexbuffer::{VertexBuffer,VertexBufferEditor};
 use super::buffer::uniformbuffer::{UniformBuffer,UniformBufferEditor};
