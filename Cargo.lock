@@ -3,7 +3,7 @@ name = "mog"
 version = "0.1.0"
 dependencies = [
  "gl 0.0.9 (git+https://github.com/bjz/gl-rs.git)",
- "glfw 0.0.5",
+ "glfw 0.0.6 (git+https://github.com/bjz/glfw-rs.git)",
 ]
 
 [[package]]
@@ -42,7 +42,8 @@ dependencies = [
 
 [[package]]
 name = "glfw"
-version = "0.0.5"
+version = "0.0.6"
+source = "git+https://github.com/bjz/glfw-rs.git#399cef3fb2010f33a12a42399e9cb52e5c1ee65e"
 dependencies = [
  "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "glfw-sys 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
