@@ -1,6 +1,6 @@
 
 [package]
-name = "mog"
+name = "htgl"
 version = "0.1.0"
 authors = [ "Ilkka Rauta" ]
 
@@ -11,7 +11,7 @@ git = "https://github.com/bjz/gl-rs.git"
 git = "https://github.com/bjz/glfw-rs.git"
 
 [lib]
-name = "mog"
+name = "htgl"
 
 [[bin]]
 name = "app"

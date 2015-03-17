@@ -1,5 +1,5 @@
 [root]
-name = "mog"
+name = "htgl"
 version = "0.1.0"
 dependencies = [
  "gl 0.0.9 (git+https://github.com/bjz/gl-rs.git)",

@@ -1,11 +1,11 @@
 
 extern crate glfw;
 
-extern crate mog;
+extern crate htgl;
 
 use glfw::Context;
 
-use mog::{VertexAttributeType,
+use htgl::{VertexAttributeType,
     RenderOption,
     ShaderType,
     PrimitiveMode,
@@ -83,9 +83,9 @@ fn main() {
     window.set_key_polling(true);
     window.make_current();
 
-    mog::load_with(|s| window.get_proc_address(s));
+    htgl::load_with(|s| window.get_proc_address(s));
 
-    let mut ctx = mog::Context::new();
+    let mut ctx = htgl::Context::new();
     println!("{:?}", ctx.get_info());
     ctx.renderer().set_option(RenderOption::ClearColor(1f32, 1f32, 1f32, 1f32));
     ctx.renderer().set_option(RenderOption::DepthTest(false));
