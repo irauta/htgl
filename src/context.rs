@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! See the struct `Context` for documentation on how the context is meant to be used.
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -28,6 +30,71 @@ use super::renderer::Renderer;
 use super::tracker::{SimpleBindingTracker,RenderBindingTracker,TrackerIdGenerator};
 use super::info::{ContextInfo,build_info};
 
+/// Context is a central concept in OpenGL, even though it's not a concrete item in the GL API.
+/// This struct is meant to be a stand-in for the GL context, but also the starting point for all
+/// the functionality this library offers.
+///
+/// # Contexts
+///
+/// Even though you're not prevented from instantiating more than one Contexts, you most likely
+/// shouldn't. If you do, and use both contexts when only one actual OpenGL context is active,
+/// things will not work as intended. This is an intentional trade-off. As mentioned, OpenGL API
+/// does not expose the context in any explicit way, but this is in practice a property of the
+/// windowing system. (For example, see wglMakeCurrent and glXMakeCurrent.) In addition, the
+/// contexts may very well be managed by a wrapper library, abstracting away all the low-level and
+/// platform specific peculiarities. This library would have to either work with only one of them,
+/// many of them, or force you to make some kind of integration between this library and the other
+/// library, giving the burden to you anyway. So, the main point still is: just don't create more
+/// than one Context and you should be fine.
+///
+/// To create a Context object, call `Context::new()`.
+///
+/// # Resources
+///
+/// To create other objects, like vertex buffers or shaders, use the other new_-prefixed functions.
+/// For example, to create a vertex buffer, call `ctx.new_vertex_buffer()`.
+///
+/// The resources are not returned themselves, but are always accessed through handles. This is
+/// somewhat analogous with the way OpenGL API itself works. The main difference is that there is
+/// no explicit bind method in this library, instead to edit an vertex buffer you call the
+/// `edit_vertex_buffer` method of Context:
+///
+///    let vbo = ctx.new_vertex_buffer();
+///    {
+///        let editor = ctx.edit_vertex_buffer(&vbo);
+///        editor.data(&vertex_data)
+///    }
+///
+/// A shorter version with chaining:
+///
+///    let vbo = ctx.new_vertex_buffer();
+///    ctx.edit_vertex_buffer(&vbo).data(&vertices);
+///
+/// ## Resource handles
+///
+/// The handles can be cloned and extend the lifetime of the actual resource in the same way
+/// `std::rc::Rc` does. This is because some OpenGL resources may "embed" a resource in themselves.
+/// And example of this is vertex arrays and index buffers. An index buffer may be attached to many
+/// vertex arrays, and it needs to live as long as any of the vertex arrays live.
+///
+/// ## Editing is exclusive
+///
+/// You should notice that the edit_* functions borrow the context mutably, that is, there can
+/// exist only one editor object at once. This is to ensure at compile time that the functions that
+/// actually edit the one resource (for example `data` in the example above) specified. After all,
+/// the underlying API doesn't allow having multiple vertex buffers bound at once, for example.
+/// (The rules are more complicated for textures as there are several slots for textures.) The
+/// limitation also works as a way to minimize the actual glBind* calls within the library.
+///
+/// ## Rendering mode
+///
+/// While binding resources is otherwise not explicitly exposed through the API, there is a
+/// "rendering mode" that also borrows the context mutably, thus you can't issue rendering commands
+/// and editing commands intertwined, at least not without creating (and destroying) editor and
+/// renderer objects in large amounts. You can access the rendering mode by calling the
+/// `renderer()` method. The `Renderer` struct has use_* methods that are analogous to the glBind*
+/// functions, and also naturally the draw methods et cetera. See the Renderer documentation for
+/// more about rendering.
 pub struct Context {
     info: ContextInfo,
     id_generator: TrackerIdGenerator,
@@ -39,6 +106,9 @@ pub struct Context {
 }
 
 impl Context {
+    /// Creates a new Context. Do not create more than one (per actual OpenGL context, anyway).
+    ///
+    /// See the documentation for the struct for more details.
     pub fn new() -> Context {
         Context {
             info: build_info(),
@@ -53,24 +123,41 @@ impl Context {
 
     // Construct new objects
 
+    /// Create a new vertex buffer object.
+    ///
+    /// Returns a handle to the created vertex buffer.
     pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(buffer::vertexbuffer::new_vertex_buffer(id, registration))
     }
 
+    /// Create a new index buffer object.
+    ///
+    /// Returns a handle to the created index buffer.
     pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(buffer::indexbuffer::new_index_buffer(id, registration))
     }
 
+    /// Create a new uniform buffer object.
+    ///
+    /// Returns a handle to the created uniform buffer.
     pub fn new_uniform_buffer(&mut self) -> UniformBufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(buffer::uniformbuffer::new_uniform_buffer(id, registration))
     }
 
+    /// Create a new vertex array object.
+    ///
+    /// See the `glVertexAttribPointer` documentation for how the attributes are specified.
+    /// This function takes a slice of vertex attributes at once - the created vertex array
+    /// is immutable, you can't change the attributes afterwards!
+    ///
+    /// If an index buffer should be associated with the vertex array, give a handle to it as the
+    /// third argument.
     pub fn new_vertex_array(&mut self,
                             attributes: &[VertexAttribute],
                             index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
@@ -79,6 +166,11 @@ impl Context {
         new_handle(VertexArray::new(self, id, attributes, index_buffer, registration))
     }
 
+    /// Create a new vertex array object that only uses contents of one vertex buffer.
+    ///
+    /// See the `glVertexAttribPointer` documentation for how the attributes slice works.
+    /// Otherwise, see the `new_vertex_array` documentation. The only vertex array the vertex
+    /// attributes refer to, are specified with the vertex_buffer argument.
     pub fn new_vertex_array_simple(&mut self,
                                    attributes: &[(u8, VertexAttributeType, bool)],
                                    vertex_buffer: VertexBufferHandle,
@@ -88,11 +180,13 @@ impl Context {
         new_handle(VertexArray::new_single_vbo(self, id, attributes, vertex_buffer, index_buffer, registration))
     }
 
+    /// Create and compile a new shader object.
     pub fn new_shader(&mut self, shader_type: ShaderType, source: &str) -> ShaderHandle {
         let registration = self.registration_handle();
         new_handle(Shader::new(shader_type, source, registration))
     }
 
+    /// Create and link a shader program from the specified shaders.
     pub fn new_program(&mut self, shaders: &[ShaderHandle]) -> ProgramHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
@@ -101,10 +195,20 @@ impl Context {
 
     // Modify object contents with the help of editor objects
 
+    /// Edit a vertex buffer. Returns an editor object that can be used to modify the buffer
+    /// contents.
     pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a VertexBufferHandle) -> VertexBufferEditor {
         buffer::vertexbuffer::new_vertex_buffer_editor(self, vbo.access())
     }
 
+    /// Edit an index buffer. Returns an editor object that can be used to modify the buffer
+    /// contents.
+    ///
+    /// Note that this function is given a *vertex array* instead of the index buffer directly.
+    /// This is because the core OpenGL specification requires index buffers to be associated with
+    /// an vertex array. The returned value is wrapped in an Option, because vertex arrays do not
+    /// necessarily contain an index buffer. Still, it would be silly to call this function with a
+    /// VAO that does not have an index buffer attached to it.
     pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<IndexBufferEditor> {
         let vao = vao.access();
         match vao.index_buffer() {
