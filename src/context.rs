@@ -102,6 +102,8 @@ pub struct Context {
     vbo_tracker: SimpleBindingTracker<VertexBuffer>,
     ubo_tracker: SimpleBindingTracker<UniformBuffer>,
     vao_tracker: RenderBindingTracker<VertexArray>,
+    /// Shared state is a way for context to communicate things to resources - mainly that the
+    /// context is alive (or is not)
     shared_state: Rc<RefCell<SharedContextState>>
 }
 
@@ -217,35 +219,48 @@ impl Context {
         }
     }
 
+    /// Edit an uniform buffer. Returns an editor object that can be used to modify the buffer
+    /// contents.
     pub fn edit_uniform_buffer<'a>(&'a mut self, ubo: &'a UniformBufferHandle) -> UniformBufferEditor {
         buffer::uniformbuffer::new_uniform_buffer_editor(self, ubo.access())
     }
 
+    /// Lets you edit uniform bindings of a program with the returned editor.
     pub fn edit_program<'a>(&'a mut self, program: &'a ProgramHandle) -> ProgramEditor {
         program::new_program_editor(self, program.access())
     }
 
+    /// Returns and "info accessor" that can figure out the attribute, uniform and fragment data
+    /// locations and other related information.
     pub fn program_info<'a>(&'a self, program: &'a ProgramHandle) -> ProgramInfoAccessor {
         program::new_program_info_accessor(program.access())
     }
 
+    /// Returns an "info accessor" that can tell if shader compilation succeeded and return the
+    /// compilation info log.
     pub fn shader_info<'a>(&'a self, shader: &'a ShaderHandle) -> ShaderInfoAccessor {
         shader::new_shader_info_accessor(shader.access())
     }
 
     // Commands that do not (directly) consume resources
 
+    /// Return a renderer object. See `Renderer` documentation for info on usage.
     pub fn renderer<'a>(&'a mut self) -> Renderer {
         Renderer::new(self)
     }
 
     // Expose context info to user too!
+
+    /// `ContextInfo` contains unchanging values related to the context, like
+    /// GL_MAX_UNIFORM_BUFFER_BINDINGS (the path is ContextInfo.uniform_buffer.max_bindings).
+    /// Currently definitely limited.
     pub fn get_info(&self) -> &ContextInfo {
         &self.info
     }
 
     // Internal stuff
 
+    /// Resources get a handle to the shared state
     fn registration_handle(&self) -> RegistrationHandle {
         RegistrationHandle::new(self.shared_state.clone())
     }
@@ -258,6 +273,9 @@ impl Drop for Context {
     }
 }
 
+/// A trait with the purpose to expose only the editing functionality to other types in the
+/// library, without exposing all the internals of `Context`. Specifically it facilitates
+/// binding of resources *for editing*, something not exposed to outside users.
 pub trait ContextEditingSupport {
     fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer);
     fn bind_ubo_for_editing(&mut self, vbo: &UniformBuffer);
@@ -283,6 +301,8 @@ impl ContextEditingSupport for Context {
     }
 }
 
+/// See `ContextEditingSupport`. This trait is to expose binding functions used when
+/// *rendering* things.
 pub trait ContextRenderingSupport {
     fn bind_vao_for_rendering(&mut self, vao: &VertexArrayHandle);
     fn bind_program_for_rendering(&mut self, program: &ProgramHandle);
@@ -304,7 +324,11 @@ impl ContextRenderingSupport for Context {
     }
 }
 
-
+/// Things that need to be shared between `Context` and the resources it spawns.
+/// This might be a bad idea, but allows the resource handles to live longer than the context,
+/// without causing freeing of GL resources after GL context has died. Alternative would have been
+/// to limit lifetimes of resource handles to strictly live within the lifetime of the context, but
+/// that would "infect" everything with a lifetime annotation...
 pub struct SharedContextState {
     pub context_alive: bool
 }
@@ -317,6 +341,7 @@ impl SharedContextState {
     }
 }
 
+/// Handle to the shared state, as used by the resources (and `Context`).
 pub struct RegistrationHandle {
     context_shared: Rc<RefCell<SharedContextState>>
 }
