@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! This module defined basic options or states that can be set in the GL context.
+//! Examples are clear color and back face culling. See `RenderOption`.
+
 use gl;
 use gl::types::GLenum;
 
+/// Rendering options.
 pub enum RenderOption {
+    /// glClearColor
     ClearColor(f32, f32, f32, f32),
+    /// GL_DEPTH_TEST
     DepthTest(bool),
+    /// GL_CULL_FACE
     CullingEnabled(bool)
 }
 

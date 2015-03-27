@@ -12,24 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! OpenGL context related information structures are defined in this module. Practically a little
+//! more structured approach than a long list of glGet* results. See `ContextInfo`, it is the
+//! "root" of context info structures.
+
 use gl;
 use gl::types::{GLint,GLenum};
 
+/// Currently `ContextInfo` doesn't contain much. The fields act as "categories". See field
+/// comments for further info.
 #[derive(Debug)]
 pub struct ContextInfo {
+    /// Information related to uniform buffers.
     pub uniform_buffer: UniformBufferInfo
 }
 
+/// Information related to uniform buffers.
 #[derive(Debug)]
 pub struct UniformBufferInfo {
+    /// GL_MAX_UNIFORM_BUFFER_BINDINGS
     pub max_bindings: GLint,
+    /// GL_MAX_GEOMETRY_UNIFORM_BLOCKS
     pub max_geometry_blocks: GLint,
+    /// GL_MAX_VERTEX_UNIFORM_BLOCKS
     pub max_vertex_blocks: GLint,
+    /// GL_MAX_FRAGMENT_UNIFORM_BLOCKS
     pub max_fragment_blocks: GLint,
+    /// GL_MAX_UNIFORM_BLOCK_SIZE
     pub max_block_size: GLint,
+    /// GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT
     pub offset_alignment: GLint
 }
 
+/// Constructor for the context info. Causes a lof of glGet* calls!
 pub fn build_info() -> ContextInfo {
     ContextInfo {
         uniform_buffer: UniformBufferInfo {
