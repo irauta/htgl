@@ -20,7 +20,8 @@ use super::super::util::slice_to_string;
 use super::Program;
 
 /// See the `type` argument of glGetActiveAttrib (the sixth one) for the set of values this enum's
-/// variants correspond to.
+/// variants correspond to. Notice the UnrecognizedType that handles the cases this library
+/// doesn't know of yet.
 #[derive(Debug)]
 pub enum ShaderAttributeType {
     Float,
@@ -43,7 +44,8 @@ pub enum ShaderAttributeType {
     UnsignedInt,
     UnsignedIntVec2,
     UnsignedIntVec3,
-    UnsignedIntVec4
+    UnsignedIntVec4,
+    UnrecognizedType(u32)
 }
 
 /// Contains information on shader program's (vertex) attributes.
@@ -75,7 +77,7 @@ pub struct ShaderAttribute {
     /// Index of the attribute
     pub location: i32,
     /// Data type of the attribute
-    pub attribute_type: Option<ShaderAttributeType>,
+    pub attribute_type: ShaderAttributeType,
     pub size: i32
 }
 
@@ -103,29 +105,29 @@ pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
     }).collect()}
 }
 
-fn attribute_type_from_u32(gl_type: u32) -> Option<ShaderAttributeType> {
+fn attribute_type_from_u32(gl_type: u32) -> ShaderAttributeType {
     match gl_type {
-        gl::FLOAT => Some(ShaderAttributeType::Float),
-        gl::FLOAT_VEC2 => Some(ShaderAttributeType::FloatVec2),
-        gl::FLOAT_VEC3 => Some(ShaderAttributeType::FloatVec3),
-        gl::FLOAT_VEC4 => Some(ShaderAttributeType::FloatVec4),
-        gl::FLOAT_MAT2 => Some(ShaderAttributeType::FloatMat2),
-        gl::FLOAT_MAT3 => Some(ShaderAttributeType::FloatMat3),
-        gl::FLOAT_MAT4 => Some(ShaderAttributeType::FloatMat4),
-        gl::FLOAT_MAT2x3 => Some(ShaderAttributeType::FloatMat2x3),
-        gl::FLOAT_MAT2x4 => Some(ShaderAttributeType::FloatMat2x4),
-        gl::FLOAT_MAT3x2 => Some(ShaderAttributeType::FloatMat3x2),
-        gl::FLOAT_MAT3x4 => Some(ShaderAttributeType::FloatMat3x4),
-        gl::FLOAT_MAT4x2 => Some(ShaderAttributeType::FloatMat4x2),
-        gl::FLOAT_MAT4x3 => Some(ShaderAttributeType::FloatMat4x3),
-        gl::INT => Some(ShaderAttributeType::Int),
-        gl::INT_VEC2 => Some(ShaderAttributeType::IntVec2),
-        gl::INT_VEC3 => Some(ShaderAttributeType::IntVec3),
-        gl::INT_VEC4 => Some(ShaderAttributeType::IntVec4),
-        gl::UNSIGNED_INT => Some(ShaderAttributeType::UnsignedInt),
-        gl::UNSIGNED_INT_VEC2 => Some(ShaderAttributeType::UnsignedIntVec2),
-        gl::UNSIGNED_INT_VEC3 => Some(ShaderAttributeType::UnsignedIntVec3),
-        gl::UNSIGNED_INT_VEC4 => Some(ShaderAttributeType::UnsignedIntVec4),
-        _ => None
+        gl::FLOAT => ShaderAttributeType::Float,
+        gl::FLOAT_VEC2 => ShaderAttributeType::FloatVec2,
+        gl::FLOAT_VEC3 => ShaderAttributeType::FloatVec3,
+        gl::FLOAT_VEC4 => ShaderAttributeType::FloatVec4,
+        gl::FLOAT_MAT2 => ShaderAttributeType::FloatMat2,
+        gl::FLOAT_MAT3 => ShaderAttributeType::FloatMat3,
+        gl::FLOAT_MAT4 => ShaderAttributeType::FloatMat4,
+        gl::FLOAT_MAT2x3 => ShaderAttributeType::FloatMat2x3,
+        gl::FLOAT_MAT2x4 => ShaderAttributeType::FloatMat2x4,
+        gl::FLOAT_MAT3x2 => ShaderAttributeType::FloatMat3x2,
+        gl::FLOAT_MAT3x4 => ShaderAttributeType::FloatMat3x4,
+        gl::FLOAT_MAT4x2 => ShaderAttributeType::FloatMat4x2,
+        gl::FLOAT_MAT4x3 => ShaderAttributeType::FloatMat4x3,
+        gl::INT => ShaderAttributeType::Int,
+        gl::INT_VEC2 => ShaderAttributeType::IntVec2,
+        gl::INT_VEC3 => ShaderAttributeType::IntVec3,
+        gl::INT_VEC4 => ShaderAttributeType::IntVec4,
+        gl::UNSIGNED_INT => ShaderAttributeType::UnsignedInt,
+        gl::UNSIGNED_INT_VEC2 => ShaderAttributeType::UnsignedIntVec2,
+        gl::UNSIGNED_INT_VEC3 => ShaderAttributeType::UnsignedIntVec3,
+        gl::UNSIGNED_INT_VEC4 => ShaderAttributeType::UnsignedIntVec4,
+        _ => ShaderAttributeType::UnrecognizedType(gl_type)
     }
 }
