@@ -12,6 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! This module handles shaders. Shaders are individual parts of the programmable rendering
+//! pipeline, handling a single task within it. For example, there are vertex and fragment
+//! shaders, each handling vertex manipulation and fragment color generation. You should consult
+//! OpenGL documentation on the intricacies of shaders and programs in OpenGL.
+//!
+//! The basic idea is that you compile individual shaders, then link them into a program. A shader
+//! may be used in many programs.
+
 use std::iter::repeat;
 
 use gl;
@@ -20,17 +28,22 @@ use gl::types::{GLenum,GLint,GLsizei};
 use super::util::vec_to_string;
 use super::context::RegistrationHandle;
 
+/// Supported shader types.
 pub enum ShaderType {
     VertexShader,
     FragmentShader
 }
 
+/// A shader object. It can be created, it's info log can be queried and it can be linked into a
+/// program.
 pub struct Shader {
     id: u32,
     registration: RegistrationHandle,
 }
 
 impl Shader {
+    /// Create and compile a shader from the given source. See glCreateShader, glShaderSource and 
+    /// glCompileShader.
     pub fn new(shader_type: ShaderType, source: &str, registration: RegistrationHandle) -> Shader {
         let id = unsafe { gl::CreateShader(shader_type_to_enum(shader_type)) };
         check_error!();
@@ -39,6 +52,7 @@ impl Shader {
         shader
     }
 
+    /// Identify the shader. The returned value is the actual OpenGL object name.
     pub fn get_id(&self) -> u32 {
         self.id
     }
@@ -100,20 +114,25 @@ impl Drop for Shader {
     }
 }
 
+/// This struct enables access to compilation status and info log of a shader.
 pub struct ShaderInfoAccessor<'a> {
     shader: &'a Shader
 }
 
 impl<'a> ShaderInfoAccessor<'a> {
+    /// Returns the shader info log. It may contain useful information about the shader, especially
+    /// in the case of error.
     pub fn get_info_log(&self) -> String {
         self.shader.get_info_log()
     }
 
+    /// A simple boolean flag that tells if compiling the shader succeeded or not.
     pub fn get_compile_status(&self) -> bool {
         self.shader.get_compile_status()
     }
 }
 
+/// Non-public constructor for the info accessor.
 pub fn new_shader_info_accessor(shader: &Shader) -> ShaderInfoAccessor {
     ShaderInfoAccessor { shader: shader }
 }

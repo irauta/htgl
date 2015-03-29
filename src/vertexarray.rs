@@ -12,6 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Vertex arrays are a fairly important concept in OpenGL 3+ core. They encapsulate the state that
+//! describes the vertex attributes of one or more vertex buffer used at the same time to render
+//! something. Vertex array also contains the index buffer binding state - it is not possible to
+//! have an index buffer bound without having a vertex array object bound.
+//! See `VertexArray`.
+
 use gl;
 use gl::types::{GLenum,GLint,GLuint,GLboolean,GLsizei,GLvoid};
 
@@ -25,6 +31,7 @@ use super::VertexBufferHandle;
 use super::buffer::indexbuffer::IndexBuffer;
 use super::tracker::TrackerId;
 
+/// Vertex attribute types, meaning the data type of a single attribute.
 #[derive(Copy,Clone,Debug)]
 pub enum VertexAttributeType {
     Byte,
@@ -40,6 +47,8 @@ pub enum VertexAttributeType {
     UnsignedInt2101010Rev
 }
 
+/// Vertex arrays are meta data objects containing info of several vertex attributes. This struct
+/// describes a single attribute. For information on specifics of it, see glVertexAttribPointer.
 #[derive(Clone)]
 pub struct VertexAttribute {
     pub index: u32,
@@ -48,6 +57,9 @@ pub struct VertexAttribute {
     pub normalized: bool,
     pub stride: u32,
     pub offset: u32,
+    /// This is not an explicit parameter of glVertexAttribPointer. In the raw OpenGL API, the
+    /// vertex buffer bound at the moment of calling glVertexAttribPointer is taken to be part
+    /// of the vertex array state. Here it is given explicitly.
     pub vertex_buffer: VertexBufferHandle
 }
 
@@ -60,6 +72,7 @@ pub struct VertexArray {
 }
 
 impl VertexArray {
+    /// Create a vertex array, the longer format.
     pub fn new(ctx: &mut Context,
                tracker_id: TrackerId,
                attributes: &[VertexAttribute],
@@ -88,6 +101,8 @@ impl VertexArray {
         vertex_array
     }
 
+    /// Create a vertex array, the simple format (only use a single vertex buffer for all
+    /// attributes)
     pub fn new_single_vbo(ctx: &mut Context,
                           tracker_id: TrackerId,
                           attributes: &[(u8, VertexAttributeType, bool)],
@@ -139,6 +154,7 @@ impl VertexArray {
         }
     }
 
+    /// What is the index buffer bound to the vertex array, if any.
     pub fn index_buffer<'a>(&'a self) -> Option<&'a IndexBuffer> {
         match self.index_buffer {
             Some(ref handle) => Some(handle.access()),

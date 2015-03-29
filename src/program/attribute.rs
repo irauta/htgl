@@ -19,6 +19,8 @@ use gl;
 use super::super::util::slice_to_string;
 use super::Program;
 
+/// See the `type` argument of glGetActiveAttrib (the sixth one) for the set of values this enum's
+/// variants correspond to.
 #[derive(Debug)]
 pub enum ShaderAttributeType {
     Float,
@@ -44,12 +46,17 @@ pub enum ShaderAttributeType {
     UnsignedIntVec4
 }
 
+/// Contains information on shader program's (vertex) attributes.
 #[derive(Debug)]
 pub struct ShaderAttributeInfo {
+    /// List of attributes.
     pub attributes: Vec<ShaderAttribute>
 }
 
 impl ShaderAttributeInfo {
+    /// A convenience method to find an attribute by name. Not particularly optimized. It might be
+    /// a good idea to only do one lookup by name and use the integer indices, borrows, or
+    /// something similar from there on.
     pub fn get_attribute(&self, name: &str) -> Option<&ShaderAttribute> {
         for attribute in self.attributes.iter() {
             if attribute.name == name {
@@ -60,10 +67,14 @@ impl ShaderAttributeInfo {
     }
 }
 
+/// Describes an (active) attribute of a shader program.
 #[derive(Debug)]
 pub struct ShaderAttribute {
+    /// Name of the attribute
     pub name: String,
+    /// Index of the attribute
     pub location: i32,
+    /// Data type of the attribute
     pub attribute_type: Option<ShaderAttributeType>,
     pub size: i32
 }

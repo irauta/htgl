@@ -98,6 +98,8 @@ use super::info::{ContextInfo,build_info};
 pub struct Context {
     info: ContextInfo,
     id_generator: TrackerIdGenerator,
+    /// The more costly and complex tracker is used, because programs might be edited while
+    /// rendering - namely the uniforms and attributes.
     program_tracker: RenderBindingTracker<Program>,
     vbo_tracker: SimpleBindingTracker<VertexBuffer>,
     ubo_tracker: SimpleBindingTracker<UniformBuffer>,
@@ -109,8 +111,7 @@ pub struct Context {
 
 impl Context {
     /// Creates a new Context. Do not create more than one (per actual OpenGL context, anyway).
-    ///
-    /// See the documentation for the struct for more details.
+    /// See the documentation for the struct for more details on what creating a `Context` means.
     pub fn new() -> Context {
         Context {
             info: build_info(),

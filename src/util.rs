@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Some basic utilities here.
+
 use gl;
 
+/// Checks if an OpenGL error has happened, and panics if so. Not really useful in release mode, as
+/// it can be quite slow, and there's relatively little to do anyway if an error happens.
 pub fn check_error(file: &str, line: u32) {
     let err_code = unsafe { gl::GetError() };
     if err_code != 0 {
@@ -31,6 +35,7 @@ pub fn check_error(file: &str, line: u32) {
     }
 }
 
+/// Takes a Vec<u8>, returns a String. Conversion may be lossy.
 /// Always remember to shorten the vector to exclude the null byte before passing the Vec to this fn!
 pub fn vec_to_string(vec: Vec<u8>) -> String {
     match String::from_utf8(vec) {
@@ -39,6 +44,8 @@ pub fn vec_to_string(vec: Vec<u8>) -> String {
     }
 }
 
+/// Takes a &[u8], returns a String. Conversion may be lossy.
+/// Leave no null bytes to the end of the string!
 pub fn slice_to_string(slice: &[u8]) -> String {
     String::from_utf8_lossy(slice).into_owned()
 }
