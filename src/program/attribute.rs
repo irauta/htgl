@@ -78,9 +78,12 @@ pub struct ShaderAttribute {
     pub location: i32,
     /// Data type of the attribute
     pub attribute_type: ShaderAttributeType,
+    /// Size of the attribute, counted as instances of the shaderattributetype
     pub size: i32
 }
 
+/// Read all the attributes and build a ShaderAttributeInfo structure from them - makes lots of GL
+/// calls, so don't call repeatedly!
 pub fn make_attribute_info_vec(program: &Program) -> ShaderAttributeInfo {
     let attr_count = program.get_value(gl::ACTIVE_ATTRIBUTES);
     let max_length = program.get_value(gl::ACTIVE_ATTRIBUTE_MAX_LENGTH);
