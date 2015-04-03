@@ -22,6 +22,15 @@ use gl::types::GLenum;
 
 use super::Program;
 
+//! This module handles management of uniform variables in OpenGL program objects. This includes
+//! being able to set uniform variables directly, but also querying program introspection info on
+//! the uniforms and uniform blocks the program has. What this module does not do, is to create
+//! uniform buffer contents for you, just the information that is needed to do so. (Also see the
+//! `info` module and the uniform block offset alignment and the uniform block maximum size
+//! values.)
+
+/// A helper enum to be used when setting a uniform's value directly (not through a uniform
+/// buffer). Use it to specify single float values or float vector values. (Or arrays of them.)
 #[derive(Copy,Debug)]
 pub enum SimpleUniformTypeFloat {
     Uniform1f,
@@ -30,6 +39,8 @@ pub enum SimpleUniformTypeFloat {
     Uniform4f
 }
 
+/// A helper enum to be used when setting a uniform's value directly (not through a uniform
+/// buffer). Use it to specify matrices of certain dimensions or arrays of such matrices.
 #[derive(Copy,Debug)]
 pub enum SimpleUniformTypeMatrix {
     Matrix2f,
@@ -43,6 +54,8 @@ pub enum SimpleUniformTypeMatrix {
     Matrix4x3f
 }
 
+/// A helper enum to be used when setting a uniform's value directly (not through a uniform
+/// buffer). Use it to specify single i32 values or i32 vector values. (Or arrays of them.)
 #[derive(Copy,Debug)]
 pub enum SimpleUniformTypeI32 {
     Uniform1i,
@@ -51,6 +64,8 @@ pub enum SimpleUniformTypeI32 {
     Uniform4i
 }
 
+/// A helper enum to be used when setting a uniform's value directly (not through a uniform
+/// buffer). Use it to specify single u32 values or u32 vector values. (Or arrays of them.)
 #[derive(Copy,Debug)]
 pub enum SimpleUniformTypeU32 {
     Uniform1u,
@@ -59,6 +74,9 @@ pub enum SimpleUniformTypeU32 {
     Uniform4u
 }
 
+/// Enum for different recognized uniform data types. Note that there is also a variant that
+/// handles the types that are not recognized by this library. See glGetActiveUniformsiv for
+/// the official list of values.
 #[derive(Copy,Debug)]
 pub enum UniformType {
     Float,
@@ -125,7 +143,8 @@ pub enum UniformType {
     UnrecognizedType(u32)
 }
 
-/// Helper struct containing all
+/// Helper struct containing all the information a GL uniform has. This is only an intermediary
+/// to use when gathering the uniform information, before passing it to user in a nicer form.
 struct GlUniform {
     name: String,
     uniform_type: i32,
@@ -150,14 +169,18 @@ impl GlUniform {
     }
 }
 
-/// Top-level result structure for program's uniform introspection
+/// Top-level result structure for program's uniform introspection info.
 #[derive(Debug)]
 pub struct UniformInfo {
+    /// Global uniforms, not in interface blocks.
     pub globals: Vec<Uniform>,
+    /// Interface block definitions, may contain several uniforms themselves.
     pub blocks: Vec<InterfaceBlock>
 }
 
 impl UniformInfo {
+    /// Convenience method that seeks a global uniform by name and returns a refernce to it if
+    /// found.
     pub fn get_global_uniform(&self, name: &str) -> Option<&Uniform> {
         for uniform in self.globals.iter() {
             if uniform.name == name {
@@ -167,6 +190,7 @@ impl UniformInfo {
         None
     }
 
+    /// Convenience method that seeks an interface block by name.
     pub fn get_block(&self, name: &str) -> Option<&InterfaceBlock> {
         for block in self.blocks.iter() {
             if block.name == name {
@@ -176,6 +200,7 @@ impl UniformInfo {
         None
     }
 
+    /// Convenience method that seeks a uniform by name from an interface block with specific name.
     pub fn get_block_uniform(&self, block_name: &str, uniform_name: &str) -> Option<&BlockUniform> {
         if let Some(block) = self.get_block(block_name) {
             return block.get_uniform(uniform_name);
@@ -184,12 +209,17 @@ impl UniformInfo {
     }
 }
 
-/// An uniform not in a block
+/// A uniform not in a block. A "global" uniform.
 #[derive(Debug)]
 pub struct Uniform {
+    /// Name of the uniform.
     pub name: String,
+    /// Location of the uniform, use this when setting value of the uniform, not the index in the
+    /// vector that describes the uniforms; they may not be the same.
     pub location: i32,
+    /// Data type of the uniform.
     pub uniform_type: UniformType,
+    /// How many instances of the type this uniform contains. Length of an array so to speak.
     pub size: i32
 }
 
@@ -204,12 +234,17 @@ impl Uniform {
     }
 }
 
-/// Description of an uniform block
+/// Description of an interface block.
 #[derive(Debug)]
 pub struct InterfaceBlock {
+    /// Name of the block.
     pub name: String,
+    /// Index of the block. Use this as the location/index, not the index in the vector this
+    /// struct is in!
     pub index: u32,
+    /// See GL_UNIFORM_BLOCK_DATA_SIZE
     pub data_size: i32,
+    /// The uniforms contained by this block.
     pub uniforms: Vec<BlockUniform>
 }
 
@@ -224,13 +259,22 @@ impl InterfaceBlock {
     }
 }
 
+/// A uniform contained within a block.
+/// TODO: Missing info whether a matrix uniform is row major.
 #[derive(Debug)]
 pub struct BlockUniform {
+    /// Name of the uniform.
     pub name: String,
+    /// Data type of the uniform.
     pub uniform_type: UniformType,
+    /// How long is the array of the uniforms (if the uniform is an array uniform).
     pub size: i32,
+    /// How many bytes from the beginning of the block this uniform is. See GL_UNIFORM_OFFSET.
     pub offset: i32,
+    /// For an array uniform, the distance between each value in the array.
+    /// See GL_UNIFORM_ARRAY_STRIDE.
     pub array_stride: i32,
+    /// Distance between rows/cols of a matrix uniform. See GL_UNIFORM_MATRIX_STRIDE.
     pub matrix_stride: i32,
 }
 
@@ -247,6 +291,7 @@ impl BlockUniform {
     }
 }
 
+/// Compiles available uniform information into a big struct.
 pub fn make_uniform_info(program: &Program) -> UniformInfo {
     let gl_uniforms = make_gl_uniform_info_vec(program);
     let mut globals = Vec::new();
@@ -267,6 +312,7 @@ pub fn make_uniform_info(program: &Program) -> UniformInfo {
     }
 }
 
+/// Builds a vector of GlUniform that represents global uniforms of a program.
 fn make_gl_uniform_info_vec(program: &Program) -> Vec<GlUniform> {
     let count = program.get_value(gl::ACTIVE_UNIFORMS) as usize;
     if count == 0 {
@@ -299,6 +345,7 @@ fn make_gl_uniform_info_vec(program: &Program) -> Vec<GlUniform> {
     info_vec
 }
 
+/// Builds a vector of GlUniform that represents uniform blocks of a program.
 fn make_uniform_block_info_vec(program: &Program) -> Vec<InterfaceBlock> {
     let count = program.get_value(gl::ACTIVE_UNIFORM_BLOCKS);
     if count == 0 {
@@ -320,6 +367,7 @@ fn make_uniform_block_info_vec(program: &Program) -> Vec<InterfaceBlock> {
     info_vec
 }
 
+/// Gets a single uniform-describing attribute for multiple uniforms as identified by the indices.
 fn fill_uniform_info_vec(program_id: u32, indices: &Vec<u32>, property: GLenum, intvalues: &mut Vec<i32>) {
     unsafe {
         gl::GetActiveUniformsiv(program_id, indices.len() as i32, indices.as_ptr(), property, intvalues.as_mut_ptr());
@@ -327,6 +375,7 @@ fn fill_uniform_info_vec(program_id: u32, indices: &Vec<u32>, property: GLenum, 
     }
 }
 
+/// Gets a value related to a uniform block.
 fn get_block_info(program_id: u32, block_index: u32, property: GLenum) -> i32 {
     unsafe {
         let mut value = 0;
@@ -336,6 +385,7 @@ fn get_block_info(program_id: u32, block_index: u32, property: GLenum) -> i32 {
     }
 }
 
+/// Finds out what a uniform's name is.
 fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
     let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
@@ -347,6 +397,7 @@ fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
     String::from_utf8(name_vec).unwrap()
 }
 
+/// Finds out what an interface block's name is.
 fn block_name(program_id: u32, index: u32, expected_len: u32) -> String {
     let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
@@ -367,6 +418,7 @@ fn get_uniform_block_index(program_id: u32, name: &str) -> u32 {
     }
 }
 
+/// Set uniform values of type f32. (Single values, 2D, 3D, 4D vectors, or arrays of them.)
 pub fn uniform_f32(location: i32, count: usize, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
     validate_uniform_f32(count, uniform_type, values);
     let count = count as i32;
@@ -381,6 +433,7 @@ pub fn uniform_f32(location: i32, count: usize, uniform_type: SimpleUniformTypeF
     }
 }
 
+/// Set uniform matrix values.
 pub fn uniform_matrix(location: i32, count: usize, uniform_type: SimpleUniformTypeMatrix, transpose: bool, values: &[f32]) {
     validate_uniform_matrix(count, uniform_type, values);
     let count = count as i32;
@@ -401,6 +454,7 @@ pub fn uniform_matrix(location: i32, count: usize, uniform_type: SimpleUniformTy
     }
 }
 
+/// Set uniform values of type u32. (Single values, 2D, 3D, 4D vectors, or arrays of them.)
 pub fn uniform_u32(location: i32, count: usize, uniform_type: SimpleUniformTypeU32, values: &[u32]) {
     validate_uniform_u32(count, uniform_type, values);
     let count = count as i32;
@@ -415,6 +469,7 @@ pub fn uniform_u32(location: i32, count: usize, uniform_type: SimpleUniformTypeU
     }
 }
 
+/// Set uniform values of type i32. (Single values, 2D, 3D, 4D vectors, or arrays of them.)
 pub fn uniform_i32(location: i32, count: usize, uniform_type: SimpleUniformTypeI32, values: &[i32]) {
     validate_uniform_i32(count, uniform_type, values);
     let count = count as i32;
@@ -429,6 +484,7 @@ pub fn uniform_i32(location: i32, count: usize, uniform_type: SimpleUniformTypeI
     }
 }
 
+/// Check that there's enough values in the slice to set `count` uniforms of given type.
 fn validate_uniform_f32(count: usize, uniform_type: SimpleUniformTypeFloat, values: &[f32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeFloat::Uniform1f => 1,
@@ -439,6 +495,7 @@ fn validate_uniform_f32(count: usize, uniform_type: SimpleUniformTypeFloat, valu
     validate_uniform(count, uniform_type, element_count, values);
 }
 
+/// Check that there's enough values in the slice to set `count` uniforms of given type.
 fn validate_uniform_matrix(count: usize, uniform_type: SimpleUniformTypeMatrix, values: &[f32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeMatrix::Matrix2f => 2 * 2,
@@ -454,6 +511,7 @@ fn validate_uniform_matrix(count: usize, uniform_type: SimpleUniformTypeMatrix, 
     validate_uniform(count, uniform_type, element_count, values);
 }
 
+/// Check that there's enough values in the slice to set `count` uniforms of given type.
 fn validate_uniform_u32(count: usize, uniform_type: SimpleUniformTypeU32, values: &[u32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeU32::Uniform1u => 1,
@@ -464,6 +522,7 @@ fn validate_uniform_u32(count: usize, uniform_type: SimpleUniformTypeU32, values
     validate_uniform(count, uniform_type, element_count, values);
 }
 
+/// Check that there's enough values in the slice to set `count` uniforms of given type.
 fn validate_uniform_i32(count: usize, uniform_type: SimpleUniformTypeI32, values: &[i32]) {
     let element_count = match uniform_type {
         SimpleUniformTypeI32::Uniform1i => 1,
@@ -474,6 +533,7 @@ fn validate_uniform_i32(count: usize, uniform_type: SimpleUniformTypeI32, values
     validate_uniform(count, uniform_type, element_count, values);
 }
 
+/// Common parts of the uniform value validation routine.
 fn validate_uniform<T, U: Debug>(count: usize, uniform_type: U, element_count: usize, values: &[T]) {
     let expected_len = count * element_count;
     if expected_len > values.len() {
