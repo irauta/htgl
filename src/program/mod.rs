@@ -28,7 +28,7 @@ use super::context::{Context,RegistrationHandle,ContextEditingSupport};
 use super::ShaderHandle;
 use super::tracker::TrackerId;
 
-pub use self::uniform::{SimpleUniformTypeFloat,SimpleUniformTypeInt,SimpleUniformTypeMatrix,SimpleUniformTypeusize};
+pub use self::uniform::{SimpleUniformTypeFloat,SimpleUniformTypeI32,SimpleUniformTypeMatrix,SimpleUniformTypeU32};
 pub use self::uniform::{UniformInfo,Uniform,InterfaceBlock,BlockUniform};
 pub use self::attribute::{ShaderAttributeInfo,ShaderAttribute};
 
@@ -251,14 +251,14 @@ impl<'a> ProgramEditor<'a> {
     /// Specify a uniform value (or multiple values of single uniform) of type u32.
     /// See notes on the uniform_f32 for correct use - giving too few values will cause a panic!
     /// For OpenGL documentation, see glUniform*uiv.
-    pub fn uniform_u32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
+    pub fn uniform_u32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeU32, values: &[u32]) {
         uniform::uniform_u32(location, count, uniform_type, values)
     }
 
     /// Specify a uniform value (or multiple values of single uniform) of type i32.
     /// See notes on the uniform_f32 for correct use - giving too few values will cause a panic!
     /// For OpenGL documentation, see glUniform*iv.
-    pub fn uniform_i32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+    pub fn uniform_i32(&self, location: i32, count: usize, uniform_type: SimpleUniformTypeI32, values: &[i32]) {
         uniform::uniform_i32(location, count, uniform_type, values)
     }
 

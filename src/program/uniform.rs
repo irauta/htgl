@@ -44,7 +44,7 @@ pub enum SimpleUniformTypeMatrix {
 }
 
 #[derive(Copy,Debug)]
-pub enum SimpleUniformTypeInt {
+pub enum SimpleUniformTypeI32 {
     Uniform1i,
     Uniform2i,
     Uniform3i,
@@ -52,7 +52,7 @@ pub enum SimpleUniformTypeInt {
 }
 
 #[derive(Copy,Debug)]
-pub enum SimpleUniformTypeusize {
+pub enum SimpleUniformTypeU32 {
     Uniform1u,
     Uniform2u,
     Uniform3u,
@@ -401,30 +401,30 @@ pub fn uniform_matrix(location: i32, count: usize, uniform_type: SimpleUniformTy
     }
 }
 
-pub fn uniform_u32(location: i32, count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
+pub fn uniform_u32(location: i32, count: usize, uniform_type: SimpleUniformTypeU32, values: &[u32]) {
     validate_uniform_u32(count, uniform_type, values);
     let count = count as i32;
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniformTypeusize::Uniform1u => gl::Uniform1uiv(location, count, value_ptr),
-            SimpleUniformTypeusize::Uniform2u => gl::Uniform2uiv(location, count, value_ptr),
-            SimpleUniformTypeusize::Uniform3u => gl::Uniform3uiv(location, count, value_ptr),
-            SimpleUniformTypeusize::Uniform4u => gl::Uniform4uiv(location, count, value_ptr),
+            SimpleUniformTypeU32::Uniform1u => gl::Uniform1uiv(location, count, value_ptr),
+            SimpleUniformTypeU32::Uniform2u => gl::Uniform2uiv(location, count, value_ptr),
+            SimpleUniformTypeU32::Uniform3u => gl::Uniform3uiv(location, count, value_ptr),
+            SimpleUniformTypeU32::Uniform4u => gl::Uniform4uiv(location, count, value_ptr),
         }
     }
 }
 
-pub fn uniform_i32(location: i32, count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+pub fn uniform_i32(location: i32, count: usize, uniform_type: SimpleUniformTypeI32, values: &[i32]) {
     validate_uniform_i32(count, uniform_type, values);
     let count = count as i32;
     unsafe {
         let value_ptr = values.as_ptr();
         match uniform_type {
-            SimpleUniformTypeInt::Uniform1i => gl::Uniform1iv(location, count, value_ptr),
-            SimpleUniformTypeInt::Uniform2i => gl::Uniform2iv(location, count, value_ptr),
-            SimpleUniformTypeInt::Uniform3i => gl::Uniform3iv(location, count, value_ptr),
-            SimpleUniformTypeInt::Uniform4i => gl::Uniform4iv(location, count, value_ptr),
+            SimpleUniformTypeI32::Uniform1i => gl::Uniform1iv(location, count, value_ptr),
+            SimpleUniformTypeI32::Uniform2i => gl::Uniform2iv(location, count, value_ptr),
+            SimpleUniformTypeI32::Uniform3i => gl::Uniform3iv(location, count, value_ptr),
+            SimpleUniformTypeI32::Uniform4i => gl::Uniform4iv(location, count, value_ptr),
         }
     }
 }
@@ -454,22 +454,22 @@ fn validate_uniform_matrix(count: usize, uniform_type: SimpleUniformTypeMatrix, 
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform_u32(count: usize, uniform_type: SimpleUniformTypeusize, values: &[u32]) {
+fn validate_uniform_u32(count: usize, uniform_type: SimpleUniformTypeU32, values: &[u32]) {
     let element_count = match uniform_type {
-        SimpleUniformTypeusize::Uniform1u => 1,
-        SimpleUniformTypeusize::Uniform2u => 2,
-        SimpleUniformTypeusize::Uniform3u => 3,
-        SimpleUniformTypeusize::Uniform4u => 4
+        SimpleUniformTypeU32::Uniform1u => 1,
+        SimpleUniformTypeU32::Uniform2u => 2,
+        SimpleUniformTypeU32::Uniform3u => 3,
+        SimpleUniformTypeU32::Uniform4u => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }
 
-fn validate_uniform_i32(count: usize, uniform_type: SimpleUniformTypeInt, values: &[i32]) {
+fn validate_uniform_i32(count: usize, uniform_type: SimpleUniformTypeI32, values: &[i32]) {
     let element_count = match uniform_type {
-        SimpleUniformTypeInt::Uniform1i => 1,
-        SimpleUniformTypeInt::Uniform2i => 2,
-        SimpleUniformTypeInt::Uniform3i => 3,
-        SimpleUniformTypeInt::Uniform4i => 4
+        SimpleUniformTypeI32::Uniform1i => 1,
+        SimpleUniformTypeI32::Uniform2i => 2,
+        SimpleUniformTypeI32::Uniform3i => 3,
+        SimpleUniformTypeI32::Uniform4i => 4
     };
     validate_uniform(count, uniform_type, element_count, values);
 }

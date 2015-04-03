@@ -55,9 +55,9 @@ pub use program::{ProgramEditor,
     InterfaceBlock,
     BlockUniform,
     SimpleUniformTypeFloat,
-    SimpleUniformTypeInt,
+    SimpleUniformTypeI32,
     SimpleUniformTypeMatrix,
-    SimpleUniformTypeusize};
+    SimpleUniformTypeU32};
 pub use shader::ShaderInfoAccessor;
 pub use buffer::vertexbuffer::VertexBufferEditor;
 pub use buffer::indexbuffer::IndexBufferEditor;
