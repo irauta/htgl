@@ -22,14 +22,6 @@ use super::context::{Context,ContextEditingSupport,RegistrationHandle};
 use super::vertexarray::VertexArray;
 use super::tracker::TrackerId;
 
-//pub use self::BufferObject::BufferObject;
-//pub use self::indexbuffer::IndexBuffer;
-//pub use self::uniformbuffer::UniformBuffer;
-
-//pub mod BufferObject;
-//pub mod indexbuffer;
-//pub mod uniformbuffer;
-
 #[derive(Clone,Copy,Debug)]
 pub enum BufferType {
     VertexBuffer,

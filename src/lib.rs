@@ -57,9 +57,6 @@ pub use program::{ProgramEditor,
     SimpleUniformTypeMatrix,
     SimpleUniformTypeU32};
 pub use shader::ShaderInfoAccessor;
-//pub use buffer::vertexbuffer::VertexBufferEditor;
-//pub use buffer::indexbuffer::IndexBufferEditor;
-//pub use buffer::uniformbuffer::UniformBufferEditor;
 pub use buffer::BufferEditor;
 pub use context::Context;
 pub use vertexarray::VertexAttributeType;
@@ -68,7 +65,6 @@ pub use renderer::PrimitiveMode;
 
 use vertexarray::VertexArray;
 use program::Program;
-// use buffer::vertexbuffer::VertexBuffer;
 use handle::Handle;
 
 macro_rules! check_error(
@@ -88,9 +84,6 @@ mod context;
 mod info;
 
 pub type BufferHandle = Handle<buffer::BufferObject>;
-//pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
-//pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
-//pub type UniformBufferHandle = Handle<buffer::UniformBuffer>;
 pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
 pub type ShaderHandle = Handle<shader::Shader>;
 pub type ProgramHandle = Handle<program::Program>;
