@@ -12,6 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! This module handles management of uniform variables in OpenGL program objects. This includes
+//! being able to set uniform variables directly, but also querying program introspection info on
+//! the uniforms and uniform blocks the program has. What this module does not do, is to create
+//! uniform buffer contents for you, just the information that is needed to do so. (Also see the
+//! `info` module and the uniform block offset alignment and the uniform block maximum size
+//! values.)
+
 use std::iter::repeat;
 use std::ptr::null_mut;
 use std::fmt::Debug;
@@ -22,16 +29,9 @@ use gl::types::GLenum;
 
 use super::Program;
 
-//! This module handles management of uniform variables in OpenGL program objects. This includes
-//! being able to set uniform variables directly, but also querying program introspection info on
-//! the uniforms and uniform blocks the program has. What this module does not do, is to create
-//! uniform buffer contents for you, just the information that is needed to do so. (Also see the
-//! `info` module and the uniform block offset alignment and the uniform block maximum size
-//! values.)
-
 /// A helper enum to be used when setting a uniform's value directly (not through a uniform
 /// buffer). Use it to specify single float values or float vector values. (Or arrays of them.)
-#[derive(Copy,Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum SimpleUniformTypeFloat {
     Uniform1f,
     Uniform2f,
@@ -41,7 +41,7 @@ pub enum SimpleUniformTypeFloat {
 
 /// A helper enum to be used when setting a uniform's value directly (not through a uniform
 /// buffer). Use it to specify matrices of certain dimensions or arrays of such matrices.
-#[derive(Copy,Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum SimpleUniformTypeMatrix {
     Matrix2f,
     Matrix3f,
@@ -56,7 +56,7 @@ pub enum SimpleUniformTypeMatrix {
 
 /// A helper enum to be used when setting a uniform's value directly (not through a uniform
 /// buffer). Use it to specify single i32 values or i32 vector values. (Or arrays of them.)
-#[derive(Copy,Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum SimpleUniformTypeI32 {
     Uniform1i,
     Uniform2i,
@@ -66,7 +66,7 @@ pub enum SimpleUniformTypeI32 {
 
 /// A helper enum to be used when setting a uniform's value directly (not through a uniform
 /// buffer). Use it to specify single u32 values or u32 vector values. (Or arrays of them.)
-#[derive(Copy,Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum SimpleUniformTypeU32 {
     Uniform1u,
     Uniform2u,
@@ -77,7 +77,7 @@ pub enum SimpleUniformTypeU32 {
 /// Enum for different recognized uniform data types. Note that there is also a variant that
 /// handles the types that are not recognized by this library. See glGetActiveUniformsiv for
 /// the official list of values.
-#[derive(Copy,Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum UniformType {
     Float,
     FloatVec2,
@@ -389,7 +389,7 @@ fn get_block_info(program_id: u32, block_index: u32, property: GLenum) -> i32 {
 fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
     let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
-        let name_ptr = name_vec.as_mut_slice().as_mut_ptr() as *mut i8;
+        let name_ptr = name_vec[..].as_mut_ptr() as *mut i8;
         gl::GetActiveUniformName(program_id, index, name_vec.len() as i32, null_mut(), name_ptr);
         check_error!();
     }
@@ -401,7 +401,7 @@ fn uniform_name(program_id: u32, index: u32, expected_len: u32) -> String {
 fn block_name(program_id: u32, index: u32, expected_len: u32) -> String {
     let mut name_vec: Vec<u8> = repeat(0u8).take(expected_len as usize).collect();
     unsafe {
-        let name_ptr = name_vec.as_mut_slice().as_mut_ptr() as *mut i8;
+        let name_ptr = name_vec[..].as_mut_ptr() as *mut i8;
         gl::GetActiveUniformBlockName(program_id, index, name_vec.len() as i32, null_mut(), name_ptr);
         check_error!();
     }

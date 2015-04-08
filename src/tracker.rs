@@ -19,40 +19,44 @@
 //! unnecessary calls to OpenGL. That this provides actual performance benefits in real-life
 //! situations, is not actually known yet.
 
-use std::rc::{Rc,Weak};
+use std::rc::Rc;
 
 use std::marker::PhantomData;
 
-/// Bindable resources implement this trait.
-pub trait Bind {
+/// Helper types that bind resources implement Bind. The types don't bind themselves directly when
+/// using trackers, because additional parameters may be needed, and the "binder" objects provide
+/// those. The binder type may naturally just call a method of the object that is being bound.
+pub trait Bind<R> {
     /// Do the actual binding, that is, call glBind* for the resource.
-    fn bind(&self);
+    fn bind(&self, resource: &R);
     /// Return (process-locally) unique identifier of the resource.
-    fn get_id(&self) -> TrackerId;
+    fn get_id(&self, resource: &R) -> TrackerId;
 }
 
 /// As the name says, a simple binding tracker. Knows what is currently bound to the context.
-pub struct SimpleBindingTracker<T> {
+pub struct SimpleBindingTracker<T: Bind<R>, R> {
     currently_bound: TrackerId,
+    binder: T,
     /// The type uses generics to keep the tracker type-specific, but PhantomData is needed because
     /// there's no member of the type (or a borrow) in the struct.
-    marker: PhantomData<T>
+    marker: PhantomData<R>
 }
 
-impl<T: Bind> SimpleBindingTracker<T> {
+impl<T: Bind<R>, R> SimpleBindingTracker<T, R> {
     /// Construct a new `SimpleBindingTracker`.
-    pub fn new() -> SimpleBindingTracker<T> {
+    pub fn new(binder: T) -> SimpleBindingTracker<T, R> {
         SimpleBindingTracker {
             currently_bound: TrackerId { id: 0 },
+            binder: binder,
             marker: PhantomData
         }
     }
 
     /// Bind resource or do nothing if it was already bound.
-    pub fn bind(&mut self, resource: &T) {
-        let id = resource.get_id();
+    pub fn bind(&mut self, resource: &R) {
+        let id = self.binder.get_id(resource);
         if self.currently_bound != id {
-            resource.bind();
+            self.binder.bind(resource);
             self.currently_bound = id;
         }
     }
@@ -61,46 +65,43 @@ impl<T: Bind> SimpleBindingTracker<T> {
 /// A tracker type that knows what's currently bound, but also remembers what was bound for
 /// rendering. It can return the bound-for-drawing resource to actually bound state even if another
 /// resource was temporarily bound for editing.
-pub struct RenderBindingTracker<T> {
-    simple_tracker: SimpleBindingTracker<T>,
-    bound_for_rendering: Option<Weak<T>>
+pub struct RenderBindingTracker<T: Bind<R>, R> {
+    simple_tracker: SimpleBindingTracker<T, R>,
+    // TODO: This could be Weak instead of Rc when it gets stable to allow resources to die ASAP.
+    bound_for_rendering: Option<Rc<R>>
 }
 
-impl<T: Bind> RenderBindingTracker<T> {
+impl<T: Bind<R>, R> RenderBindingTracker<T, R> {
     /// Construct a new tracker.
-    pub fn new() -> RenderBindingTracker<T> {
-        RenderBindingTracker { simple_tracker: SimpleBindingTracker::new(), bound_for_rendering: None }
+    pub fn new(binder: T) -> RenderBindingTracker<T, R> {
+        RenderBindingTracker { simple_tracker: SimpleBindingTracker::new(binder), bound_for_rendering: None }
     }
 
     /// Bind resource for editing - resource is bound immediately if not already bound.
-    pub fn bind_for_editing(&mut self, resource: &T) {
+    pub fn bind_for_editing(&mut self, resource: &R) {
         self.simple_tracker.bind(resource);
     }
 
     /// Bind resource for drawing - resource is bound immediately if not already bound, but also
     /// marked as being used for rendering. If another resource is bound for editing, this binding
     /// may still be restored by `restore_rendering_state()`.
-    pub fn bind_for_rendering(&mut self, resource: &Rc<T>) {
+    pub fn bind_for_rendering(&mut self, resource: &Rc<R>) {
         self.simple_tracker.bind(&**resource);
-        self.bound_for_rendering = Some(resource.downgrade());
+        self.bound_for_rendering = Some(resource.clone());
     }
 
     /// If a resource has been bound for rendering earlier, bind it again (if not bound already),
     /// even if another resource had been bound for editing.
     pub fn restore_rendering_state(&mut self) {
-        let upgraded = match self.bound_for_rendering {
-            Some(ref weak) => weak.upgrade(),
+        match self.bound_for_rendering {
+            Some(ref resource) => self.simple_tracker.bind(&*resource),
             None => return
-        };
-        match upgraded {
-            Some(resource) => self.simple_tracker.bind(&*resource),
-            None => self.bound_for_rendering = None
         }
     }
 }
 
 /// A identifier type used by the tracker types.
-#[derive(Copy)]
+#[derive(Clone,Copy)]
 pub struct TrackerId {
     id: u32
 }

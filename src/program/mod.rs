@@ -139,10 +139,14 @@ impl Program {
         }
         value
     }
+
+    fn bind(&self) {
+        unsafe {
+            gl::UseProgram(self.id);
+        }
+    }
 }
 
-
-#[unsafe_destructor]
 impl Drop for Program {
     fn drop(&mut self) {
         if self.registration.context_alive() {
@@ -154,15 +158,21 @@ impl Drop for Program {
     }
 }
 
-impl Bind for Program {
-    fn bind(&self) {
-        unsafe {
-            gl::UseProgram(self.id);
-        }
+pub struct ProgramBinder;
+
+impl ProgramBinder {
+    pub fn new() -> ProgramBinder {
+        ProgramBinder
+    }
+}
+
+impl Bind<Program> for ProgramBinder {
+    fn bind(&self, program: &Program) {
+        program.bind();
     }
 
-    fn get_id(&self) -> TrackerId {
-        self.tracker_id
+    fn get_id(&self, program: &Program) -> TrackerId {
+        program.tracker_id
     }
 }
 

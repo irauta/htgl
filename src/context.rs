@@ -17,15 +17,15 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use super::{VertexBufferHandle,IndexBufferHandle,UniformBufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
+use super::{BufferHandle,VertexArrayHandle,ProgramHandle,ShaderHandle};
 use super::handle::{new_handle,HandleAccess};
-use super::program::{self,Program,ProgramEditor,ProgramInfoAccessor};
+use super::program::{self,Program,ProgramEditor,ProgramInfoAccessor,ProgramBinder};
 use super::shader::{self,Shader,ShaderInfoAccessor,ShaderType};
-use super::buffer;
-use super::buffer::vertexbuffer::{VertexBuffer,VertexBufferEditor};
-use super::buffer::uniformbuffer::{UniformBuffer,UniformBufferEditor};
-use super::buffer::indexbuffer::IndexBufferEditor;
-use super::vertexarray::{VertexArray,VertexAttribute,VertexAttributeType};
+use super::buffer::{self,BufferObject,BufferBinder,BufferEditor,BufferType};
+//use super::buffer::vertexbuffer::{Buffer,BufferEditor};
+//use super::buffer::uniformbuffer::{Buffer,BufferEditor};
+//use super::buffer::indexbuffer::BufferEditor;
+use super::vertexarray::{VertexArray,VertexAttribute,VertexAttributeType,VertexArrayBinder};
 use super::renderer::Renderer;
 use super::tracker::{SimpleBindingTracker,RenderBindingTracker,TrackerIdGenerator};
 use super::info::{ContextInfo,build_info};
@@ -100,10 +100,10 @@ pub struct Context {
     id_generator: TrackerIdGenerator,
     /// The more costly and complex tracker is used, because programs might be edited while
     /// rendering - namely the uniforms and attributes.
-    program_tracker: RenderBindingTracker<Program>,
-    vbo_tracker: SimpleBindingTracker<VertexBuffer>,
-    ubo_tracker: SimpleBindingTracker<UniformBuffer>,
-    vao_tracker: RenderBindingTracker<VertexArray>,
+    program_tracker: RenderBindingTracker<ProgramBinder, Program>,
+    vbo_tracker: SimpleBindingTracker<BufferBinder, BufferObject>,
+    ubo_tracker: SimpleBindingTracker<BufferBinder, BufferObject>,
+    vao_tracker: RenderBindingTracker<VertexArrayBinder, VertexArray>,
     /// Shared state is a way for context to communicate things to resources - mainly that the
     /// context is alive (or is not)
     shared_state: Rc<RefCell<SharedContextState>>
@@ -116,41 +116,23 @@ impl Context {
         Context {
             info: build_info(),
             id_generator: TrackerIdGenerator::new(),
-            program_tracker: RenderBindingTracker::new(),
-            vbo_tracker: SimpleBindingTracker::new(),
-            ubo_tracker: SimpleBindingTracker::new(),
-            vao_tracker: RenderBindingTracker::new(),
+            program_tracker: RenderBindingTracker::new(ProgramBinder::new()),
+            vbo_tracker: SimpleBindingTracker::new(BufferBinder::new(BufferType::VertexBuffer)),
+            ubo_tracker: SimpleBindingTracker::new(BufferBinder::new(BufferType::UniformBuffer)),
+            vao_tracker: RenderBindingTracker::new(VertexArrayBinder::new()),
             shared_state: Rc::new(RefCell::new(SharedContextState::new()))
         }
     }
 
     // Construct new objects
 
-    /// Create a new vertex buffer object.
+    /// Create a new buffer object.
     ///
-    /// Returns a handle to the created vertex buffer.
-    pub fn new_vertex_buffer(&mut self) -> VertexBufferHandle {
+    /// Returns a handle to the created buffer object.
+    pub fn new_buffer(&mut self) -> BufferHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
-        new_handle(buffer::vertexbuffer::new_vertex_buffer(id, registration))
-    }
-
-    /// Create a new index buffer object.
-    ///
-    /// Returns a handle to the created index buffer.
-    pub fn new_index_buffer(&mut self) -> IndexBufferHandle {
-        let registration = self.registration_handle();
-        let id = self.id_generator.new_id();
-        new_handle(buffer::indexbuffer::new_index_buffer(id, registration))
-    }
-
-    /// Create a new uniform buffer object.
-    ///
-    /// Returns a handle to the created uniform buffer.
-    pub fn new_uniform_buffer(&mut self) -> UniformBufferHandle {
-        let registration = self.registration_handle();
-        let id = self.id_generator.new_id();
-        new_handle(buffer::uniformbuffer::new_uniform_buffer(id, registration))
+        new_handle(buffer::new_buffer(id, registration))
     }
 
     /// Create a new vertex array object.
@@ -163,7 +145,7 @@ impl Context {
     /// third argument.
     pub fn new_vertex_array(&mut self,
                             attributes: &[VertexAttribute],
-                            index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
+                            index_buffer: Option<BufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(VertexArray::new(self, id, attributes, index_buffer, registration))
@@ -176,8 +158,8 @@ impl Context {
     /// attributes refer to, are specified with the vertex_buffer argument.
     pub fn new_vertex_array_simple(&mut self,
                                    attributes: &[(u8, VertexAttributeType, bool)],
-                                   vertex_buffer: VertexBufferHandle,
-                                   index_buffer: Option<IndexBufferHandle>) -> VertexArrayHandle {
+                                   vertex_buffer: BufferHandle,
+                                   index_buffer: Option<BufferHandle>) -> VertexArrayHandle {
         let registration = self.registration_handle();
         let id = self.id_generator.new_id();
         new_handle(VertexArray::new_single_vbo(self, id, attributes, vertex_buffer, index_buffer, registration))
@@ -200,8 +182,8 @@ impl Context {
 
     /// Edit a vertex buffer. Returns an editor object that can be used to modify the buffer
     /// contents.
-    pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a VertexBufferHandle) -> VertexBufferEditor {
-        buffer::vertexbuffer::new_vertex_buffer_editor(self, vbo.access())
+    pub fn edit_vertex_buffer<'a>(&'a mut self, vbo: &'a BufferHandle) -> BufferEditor {
+        buffer::new_vertex_buffer_editor(self, vbo.access())
     }
 
     /// Edit an index buffer. Returns an editor object that can be used to modify the buffer
@@ -212,18 +194,18 @@ impl Context {
     /// an vertex array. The returned value is wrapped in an Option, because vertex arrays do not
     /// necessarily contain an index buffer. Still, it would be silly to call this function with a
     /// VAO that does not have an index buffer attached to it.
-    pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<IndexBufferEditor> {
+    pub fn edit_index_buffer<'a>(&'a mut self, vao: &'a VertexArrayHandle) -> Option<BufferEditor> {
         let vao = vao.access();
         match vao.index_buffer() {
-            Some(_) => Some(buffer::indexbuffer::new_index_buffer_editor(self, vao)),
+            Some(ref mut ibo) => Some(buffer::new_index_buffer_editor(self, vao, ibo)),
             None => None
         }
     }
 
     /// Edit an uniform buffer. Returns an editor object that can be used to modify the buffer
     /// contents.
-    pub fn edit_uniform_buffer<'a>(&'a mut self, ubo: &'a UniformBufferHandle) -> UniformBufferEditor {
-        buffer::uniformbuffer::new_uniform_buffer_editor(self, ubo.access())
+    pub fn edit_uniform_buffer<'a>(&'a mut self, ubo: &'a BufferHandle) -> BufferEditor {
+        buffer::new_uniform_buffer_editor(self, ubo.access())
     }
 
     /// Lets you edit uniform bindings of a program with the returned editor.
@@ -267,7 +249,6 @@ impl Context {
     }
 }
 
-#[unsafe_destructor]
 impl Drop for Context {
     fn drop(&mut self) {
         self.shared_state.borrow_mut().context_alive = false;
@@ -278,18 +259,18 @@ impl Drop for Context {
 /// library, without exposing all the internals of `Context`. Specifically it facilitates
 /// binding of resources *for editing*, something not exposed to outside users.
 pub trait ContextEditingSupport {
-    fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer);
-    fn bind_ubo_for_editing(&mut self, vbo: &UniformBuffer);
+    fn bind_vbo_for_editing(&mut self, vbo: &BufferObject);
+    fn bind_ubo_for_editing(&mut self, vbo: &BufferObject);
     fn bind_vao_for_editing(&mut self, vao: &VertexArray);
     fn bind_program_for_editing(&mut self, program: &Program);
 }
 
 impl ContextEditingSupport for Context {
-    fn bind_vbo_for_editing(&mut self, vbo: &VertexBuffer) {
-        self.vbo_tracker.bind(vbo);
+    fn bind_vbo_for_editing(&mut self, vbo: &BufferObject) {
+        self.vbo_tracker.bind(&vbo);
     }
 
-    fn bind_ubo_for_editing(&mut self, ubo: &UniformBuffer) {
+    fn bind_ubo_for_editing(&mut self, ubo: &BufferObject) {
         self.ubo_tracker.bind(ubo);
     }
 

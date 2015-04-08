@@ -39,8 +39,6 @@
 //! instead of a more expensive call to the driver every time. Time will tell if this is a good
 //! idea.
 
-#![feature(unsafe_destructor,alloc)]
-
 extern crate gl;
 
 pub use gl::load_with;
@@ -59,9 +57,10 @@ pub use program::{ProgramEditor,
     SimpleUniformTypeMatrix,
     SimpleUniformTypeU32};
 pub use shader::ShaderInfoAccessor;
-pub use buffer::vertexbuffer::VertexBufferEditor;
-pub use buffer::indexbuffer::IndexBufferEditor;
-pub use buffer::uniformbuffer::UniformBufferEditor;
+//pub use buffer::vertexbuffer::VertexBufferEditor;
+//pub use buffer::indexbuffer::IndexBufferEditor;
+//pub use buffer::uniformbuffer::UniformBufferEditor;
+pub use buffer::BufferEditor;
 pub use context::Context;
 pub use vertexarray::VertexAttributeType;
 pub use options::RenderOption;
@@ -69,7 +68,7 @@ pub use renderer::PrimitiveMode;
 
 use vertexarray::VertexArray;
 use program::Program;
-use buffer::vertexbuffer::VertexBuffer;
+// use buffer::vertexbuffer::VertexBuffer;
 use handle::Handle;
 
 macro_rules! check_error(
@@ -88,9 +87,10 @@ mod renderer;
 mod context;
 mod info;
 
-pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
-pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
-pub type UniformBufferHandle = Handle<buffer::UniformBuffer>;
+pub type BufferHandle = Handle<buffer::BufferObject>;
+//pub type VertexBufferHandle = Handle<buffer::VertexBuffer>;
+//pub type IndexBufferHandle = Handle<buffer::IndexBuffer>;
+//pub type UniformBufferHandle = Handle<buffer::UniformBuffer>;
 pub type VertexArrayHandle = Handle<vertexarray::VertexArray>;
 pub type ShaderHandle = Handle<shader::Shader>;
 pub type ProgramHandle = Handle<program::Program>;

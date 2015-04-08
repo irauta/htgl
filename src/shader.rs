@@ -102,7 +102,6 @@ impl Shader {
     }
 }
 
-#[unsafe_destructor]
 impl Drop for Shader {
     fn drop(&mut self) {
         if self.registration.context_alive() {

@@ -26,9 +26,8 @@ use super::tracker::Bind;
 
 use super::context::{RegistrationHandle,ContextEditingSupport};
 use super::handle::HandleAccess;
-use super::IndexBufferHandle;
-use super::VertexBufferHandle;
-use super::buffer::indexbuffer::IndexBuffer;
+use super::BufferHandle;
+use super::buffer::{BufferObject,BufferType};
 use super::tracker::TrackerId;
 
 /// Vertex attribute types, meaning the data type of a single attribute.
@@ -60,7 +59,7 @@ pub struct VertexAttribute {
     /// This is not an explicit parameter of glVertexAttribPointer. In the raw OpenGL API, the
     /// vertex buffer bound at the moment of calling glVertexAttribPointer is taken to be part
     /// of the vertex array state. Here it is given explicitly.
-    pub vertex_buffer: VertexBufferHandle
+    pub vertex_buffer: BufferHandle
 }
 
 pub struct VertexArray {
@@ -68,7 +67,7 @@ pub struct VertexArray {
     tracker_id: TrackerId,
     registration: RegistrationHandle,
     vertex_attributes: Vec<VertexAttribute>,
-    index_buffer: Option<IndexBufferHandle>
+    index_buffer: Option<BufferHandle>
 }
 
 impl VertexArray {
@@ -76,7 +75,7 @@ impl VertexArray {
     pub fn new(ctx: &mut Context,
                tracker_id: TrackerId,
                attributes: &[VertexAttribute],
-               index_buffer: Option<IndexBufferHandle>,
+               index_buffer: Option<BufferHandle>,
                registration: RegistrationHandle) -> VertexArray {
         let mut id: u32 = 0;
         unsafe {
@@ -95,7 +94,7 @@ impl VertexArray {
             VertexArray::set_vertex_attribute(ctx, attribute);
         }
         match vertex_array.index_buffer {
-            Some(ref index_buffer) => index_buffer.access().bind(),
+            Some(ref index_buffer) => index_buffer.access().bind(BufferType::IndexBuffer),
             None => {}
         }
         vertex_array
@@ -106,8 +105,8 @@ impl VertexArray {
     pub fn new_single_vbo(ctx: &mut Context,
                           tracker_id: TrackerId,
                           attributes: &[(u8, VertexAttributeType, bool)],
-                          vertex_buffer: VertexBufferHandle,
-                          index_buffer: Option<IndexBufferHandle>,
+                          vertex_buffer: BufferHandle,
+                          index_buffer: Option<BufferHandle>,
                           registration: RegistrationHandle) -> VertexArray {
         let mut full_attributes = Vec::with_capacity(attributes.len());
         let mut counter = 0;
@@ -155,15 +154,21 @@ impl VertexArray {
     }
 
     /// What is the index buffer bound to the vertex array, if any.
-    pub fn index_buffer<'a>(&'a self) -> Option<&'a IndexBuffer> {
+    pub fn index_buffer<'a>(&'a self) -> Option<&'a BufferObject> {
         match self.index_buffer {
             Some(ref handle) => Some(handle.access()),
             None => None
         }
     }
+
+    fn bind(&self) {
+        unsafe {
+            gl::BindVertexArray(self.id);
+        }
+        check_error!();
+    }
 }
 
-#[unsafe_destructor]
 impl Drop for VertexArray {
     fn drop(&mut self) {
         if self.registration.context_alive() {
@@ -175,16 +180,21 @@ impl Drop for VertexArray {
     }
 }
 
-impl Bind for VertexArray {
-    fn bind(&self) {
-        unsafe {
-            gl::BindVertexArray(self.id);
-        }
-        check_error!();
+pub struct VertexArrayBinder;
+
+impl VertexArrayBinder {
+    pub fn new() -> VertexArrayBinder {
+        VertexArrayBinder
+    }
+}
+
+impl Bind<VertexArray> for VertexArrayBinder {
+    fn bind(&self, vertex_array: &VertexArray) {
+        vertex_array.bind();
     }
 
-    fn get_id(&self) -> TrackerId {
-        self.tracker_id
+    fn get_id(&self, vertex_array: &VertexArray) -> TrackerId {
+        vertex_array.tracker_id
     }
 }
 
