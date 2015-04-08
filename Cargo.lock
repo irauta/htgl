@@ -2,8 +2,8 @@
 name = "htgl"
 version = "0.1.0"
 dependencies = [
- "gl 0.0.9 (git+https://github.com/bjz/gl-rs.git)",
- "glfw 0.0.6 (git+https://github.com/bjz/glfw-rs.git)",
+ "gl 0.0.12 (git+https://github.com/bjz/gl-rs.git)",
+ "glfw 0.0.7",
 ]
 
 [[package]]
@@ -13,73 +13,75 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "gl"
-version = "0.0.9"
-source = "git+https://github.com/bjz/gl-rs.git#5867745f94b2c9f1a37b079f0ddee887651f1f5f"
+version = "0.0.12"
+source = "git+https://github.com/bjz/gl-rs.git#3ebf1cfeda5c5090e6061021b271c32c8eb3bbbd"
 dependencies = [
  "gl_common 0.0.4 (git+https://github.com/bjz/gl-rs.git)",
- "gl_generator 0.0.19 (git+https://github.com/bjz/gl-rs.git)",
+ "gl_generator 0.0.23 (git+https://github.com/bjz/gl-rs.git)",
  "khronos_api 0.0.5 (git+https://github.com/bjz/gl-rs.git)",
- "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gl_common"
 version = "0.0.4"
-source = "git+https://github.com/bjz/gl-rs.git#5867745f94b2c9f1a37b079f0ddee887651f1f5f"
+source = "git+https://github.com/bjz/gl-rs.git#3ebf1cfeda5c5090e6061021b271c32c8eb3bbbd"
 dependencies = [
- "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "gl_generator"
-version = "0.0.19"
-source = "git+https://github.com/bjz/gl-rs.git#5867745f94b2c9f1a37b079f0ddee887651f1f5f"
+version = "0.0.23"
+source = "git+https://github.com/bjz/gl-rs.git#3ebf1cfeda5c5090e6061021b271c32c8eb3bbbd"
 dependencies = [
  "khronos_api 0.0.5 (git+https://github.com/bjz/gl-rs.git)",
- "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "xml-rs 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xml-rs 0.1.23 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "glfw"
-version = "0.0.6"
-source = "git+https://github.com/bjz/glfw-rs.git#399cef3fb2010f33a12a42399e9cb52e5c1ee65e"
+version = "0.0.7"
 dependencies = [
  "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "glfw-sys 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "semver 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glfw-sys 3.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "semver 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "glfw-sys"
-version = "3.1.0"
+version = "3.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "khronos_api"
 version = "0.0.5"
-source = "git+https://github.com/bjz/gl-rs.git#5867745f94b2c9f1a37b079f0ddee887651f1f5f"
+source = "git+https://github.com/bjz/gl-rs.git#3ebf1cfeda5c5090e6061021b271c32c8eb3bbbd"
 
 [[package]]
 name = "libc"
-version = "0.1.2"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "log"
-version = "0.2.5"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "semver"
-version = "0.1.16"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "xml-rs"
-version = "0.1.20"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
