@@ -103,18 +103,18 @@ fn main() {
     ctx.renderer().set_option(RenderOption::ClearColor(1f32, 1f32, 1f32, 1f32));
     ctx.renderer().set_option(RenderOption::DepthTest(false));
     ctx.renderer().set_option(RenderOption::CullingEnabled(true));
-    let vbo = ctx.new_vertex_buffer();
+    let vbo = ctx.new_buffer();
     let vertices = [
         Vertex::new(-0.5f32, -0.5f32, 0f32, 255, 0, 0, 0),
         Vertex::new(0.5f32, -0.5f32, 0f32, 0, 255, 0, 0),
         Vertex::new(0f32, 0.5f32, 0f32, 0, 0, 255, 0),
         ];
     ctx.edit_vertex_buffer(&vbo).data(&vertices);
-    let ibo = ctx.new_index_buffer();
+    let ibo = ctx.new_buffer();
     let vao = ctx.new_vertex_array_simple(&[(3, VertexAttributeType::Float, false), (4, VertexAttributeType::UnsignedByte, true)], vbo, Some(ibo));
     if let Some(mut editor) = ctx.edit_index_buffer(&vao) {
-        let indices = [0, 1, 2];
-        editor.data_u16(&indices);
+        let indices = [0u16, 1u16, 2u16];
+        editor.data(&indices);
     }
     let vs = ctx.new_shader(ShaderType::VertexShader, VS_SOURCE);
     if !ctx.shader_info(&vs).get_compile_status() {
