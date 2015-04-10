@@ -12,6 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Buffers are central to modern OpenGL as a bulk source of data, alongside textures.
+//!
+//! As with "bare" OpenGL buffers the buffers provided by this library are basically untyped,
+//! in the sense that the same buffer can be used as, for example, vertex and index buffer.
+//! When editing buffer contents, you must choose to edit it as a buffer of some specific type.
+//! See `Context::edit_vertex_buffer`, `Context::edit_uniform_buffer` and the like. The OpenGL
+//! driver may take the type information as a hint on how to allocate memory for the buffer, but
+//! this is in no way guaranteed. Modern implementations are actually likely to consider all
+//! buffers equal, considering that is how the new APIs (Vulkan, D3D12) work.
+//!
+//! Note that to draw with a vertex buffer and an index buffer, they must be attached to an
+//! vertex array object, and then use (read: bind) it to have the buffers in use when drawing.
+
 use gl;
 use gl::types::{GLenum,GLsizeiptr,GLvoid};
 
@@ -22,10 +35,14 @@ use super::context::{Context,ContextEditingSupport,RegistrationHandle};
 use super::vertexarray::VertexArray;
 use super::tracker::TrackerId;
 
+/// The different recognized buffer types.
 #[derive(Clone,Copy,Debug)]
 pub enum BufferType {
+    /// GL_ARRAY_BUFFER
     VertexBuffer,
+    /// GL_ELEMENT_ARRAY_BUFFER
     IndexBuffer,
+    /// GL_UNIFORM_BUFFER
     UniformBuffer
 }
 
@@ -37,12 +54,14 @@ fn type_to_target(buffer_type: BufferType) -> GLenum {
     }
 }
 
+/// Buffer object structure.
 pub struct BufferObject {
     pub id: u32,
     tracker_id: TrackerId,
     registration: RegistrationHandle
 }
 
+/// Create a new buffer object.
 pub fn new_buffer(tracker_id: TrackerId, registration: RegistrationHandle) -> BufferObject {
     BufferObject::new(tracker_id, registration)
 }
@@ -77,6 +96,7 @@ impl BufferObject {
         }
     }
 
+    /// Bind the buffer. Not really to be used directly!
     pub fn bind(&self, buffer_type: BufferType) {
         unsafe {
             gl::BindBuffer(type_to_target(buffer_type), self.id);
@@ -102,6 +122,7 @@ impl Drop for BufferObject {
     }
 } */
 
+/// Helper type that binds the buffers for binding trackers.
 pub struct BufferBinder {
     buffer_type: BufferType
 }
@@ -122,16 +143,19 @@ impl Bind<BufferObject> for BufferBinder {
     }
 }
 
+/// Bind buffer as VBO and edit it.
 pub fn new_vertex_buffer_editor<'a>(context: &'a mut Context, buffer: &'a BufferObject) -> BufferEditor<'a> {
     context.bind_vbo_for_editing(buffer);
     BufferEditor { context: context, buffer: buffer, buffer_type: BufferType::VertexBuffer }
 }
 
+/// Bind the vertex array object the IBO is associated with(!) and edit it.
 pub fn new_index_buffer_editor<'a>(context: &'a mut Context, vertex_array: &'a VertexArray, buffer: &'a BufferObject) -> BufferEditor<'a> {
     context.bind_vao_for_editing(vertex_array);
     BufferEditor { context: context, buffer: buffer, buffer_type: BufferType::IndexBuffer }
 }
 
+/// Bind buffer as UBO and edit it.
 pub fn new_uniform_buffer_editor<'a>(context: &'a mut Context, buffer: &'a BufferObject) -> BufferEditor<'a> {
     context.bind_ubo_for_editing(buffer);
     BufferEditor { context: context, buffer: buffer, buffer_type: BufferType::UniformBuffer }
@@ -145,10 +169,17 @@ pub struct BufferEditor<'a> {
 }
 
 impl<'a> BufferEditor<'a> {
+    /// Replace the data store of the buffer object. This effectively resizes the buffer, but the
+    /// old contents are lost.
+    ///
+    /// See glBufferData.
     pub fn data<D>(&mut self, data: &[D]) {
         self.buffer.data(self.buffer_type, data);
     }
 
+    /// Replace a region of values within the buffer.
+    ///
+    /// See glBufferSubData.
     pub fn sub_data<D>(&mut self, data: &[D], byte_offset: usize) {
         self.buffer.sub_data(self.buffer_type, data, byte_offset);
     }
