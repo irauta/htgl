@@ -145,11 +145,11 @@ pub struct BufferEditor<'a> {
 }
 
 impl<'a> BufferEditor<'a> {
-    pub fn data<D>(&mut self, buffer_type: BufferType, data: &[D]) {
-        self.buffer.data(buffer_type, data);
+    pub fn data<D>(&mut self, data: &[D]) {
+        self.buffer.data(self.buffer_type, data);
     }
 
-    pub fn sub_data<D>(&mut self, buffer_type: BufferType, data: &[D], byte_offset: usize) {
-        self.buffer.sub_data(buffer_type, data, byte_offset);
+    pub fn sub_data<D>(&mut self, data: &[D], byte_offset: usize) {
+        self.buffer.sub_data(self.buffer_type, data, byte_offset);
     }
 }
