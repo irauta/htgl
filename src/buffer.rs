@@ -161,6 +161,7 @@ pub fn new_uniform_buffer_editor<'a>(context: &'a mut Context, buffer: &'a Buffe
     BufferEditor { context: context, buffer: buffer, buffer_type: BufferType::UniformBuffer }
 }
 
+/// Buffer editor is used to edit contents of a buffer object of any type.
 pub struct BufferEditor<'a> {
     #[allow(dead_code)]
     context: &'a mut Context,

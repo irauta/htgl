@@ -27,9 +27,9 @@ pub enum PrimitiveMode {
     Triangles
 }
 
-/// The renderer. It borrows the context mutably, so doing other things while it is active/alive,
-/// is not possible. This is to keep the library's state tracking simpler (and hopefully more
-/// correct).
+/// The renderer handles the actual drawing calls. It borrows the context mutably, so doing other
+/// things while it is active/alive, is not possible. This is to keep the library's state tracking
+/// simpler (and hopefully more correct).
 pub struct Renderer<'a> {
     context: &'a mut Context
 }
