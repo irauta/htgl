@@ -1,8 +1,8 @@
-# HTGL: OpenGL hiking trail
+# HTGL: An OpenGL hiking trail
 
 ## An OpenGL wrapper library targeting OpenGL 3.3 in Rust
 
-The version 3.3 of OpenGL is targeted as it's the newest version available on all three of Linux (when using the open drivers), OS X and Windows. 
+The version 3.3 of OpenGL is targeted as it's the newest version available on all three of Linux (when using the open drivers), OS X and Windows.
 
 ### Dependencies
 
@@ -26,4 +26,4 @@ Naturally, the Cargo.toml is the definitive source for this kind of information.
 
 ### The name
 
-Before OpenGL 3 was published, there was the code name Longs Peak, and now there is Vulkan. While hiking trails aren't the most mountainy things, the concept seemed like a fitting base for a name.
+Before OpenGL 3 was published, there was the code name Longs Peak, and now there is Vulkan. While hiking trails aren't the most mountainy things, the concept seemed like a fitting base for a name. The library also tries to provide a narrow but relatively safe path for OpenGL.
