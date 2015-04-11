@@ -10,7 +10,7 @@ This project licensed under Apache License 2.0.
 
 ### Dependencies
 
-- gl-rs, the library for which this one essentially is a wrapper.
+- gl-rs, the library that this one essentially wraps.
 - glfw-rs, only used in the test application, not by the lib itself. The idea is to move the app away to its own repo or at least make this dependency optional.
 
 Naturally, the Cargo.toml is the definitive source for this kind of information.
