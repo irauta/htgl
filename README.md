@@ -4,10 +4,14 @@
 
 The version 3.3 of OpenGL is targeted as it's the newest version available on all three of Linux (when using the open drivers), OS X and Windows.
 
+*Note that this project is very much work in progress, it doesn't even properly support textures yet.* It's also currently mostly a personal project, and there are no guarantees of anything (other than what the license promises).
+
+This project licensed under Apache License 2.0.
+
 ### Dependencies
 
 - gl-rs, the library for which this one essentially is a wrapper.
-- glfw-rs, only used in the test application, not by the lib itself. The idea is to the app away or at last make this dependency optional.
+- glfw-rs, only used in the test application, not by the lib itself. The idea is to move the app away to its own repo or at least make this dependency optional.
 
 Naturally, the Cargo.toml is the definitive source for this kind of information.
 
