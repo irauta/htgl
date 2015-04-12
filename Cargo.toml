@@ -8,8 +8,7 @@ authors = [ "Ilkka Rauta" ]
 git = "https://github.com/bjz/gl-rs.git"
 
 [dependencies.glfw]
-path = "../glfw-rs"
-#git = "https://github.com/bjz/glfw-rs.git"
+git = "https://github.com/bjz/glfw-rs.git"
 
 [lib]
 name = "htgl"
