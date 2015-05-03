@@ -2,3 +2,4 @@
 *.sublime-workspace
 target
 Makefile
+/Cargo.lock
